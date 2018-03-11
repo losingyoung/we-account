@@ -1,6 +1,6 @@
 import Styled from 'styled-components'
 
-const buttonSize = '5rem'
+const buttonSize = '4.4rem'
 
 export const Container = Styled.div`
 position: fixed;
@@ -8,9 +8,16 @@ bottom: 0;
 width:100%;
 height:3rem;
 display:flex;
+background-color:#ddd;
+padding:5px;
 `
 export const TabItem = Styled.div`
 flex:1;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+color:${props => props.active ? "#009aff" : "#fff"};
 `
 export const PlaceholderButton = Styled.div`
 width:${buttonSize};
@@ -26,4 +33,11 @@ height:${buttonSize};
 left:50%;
 transform: translateX(-50%);
 `
-// export const TabIcon = Styled.
+
+export const TabIcon = Styled.i`
+font-size:30px;
+`
+
+export const TabTitle = Styled.span`
+font-size:16px;
+`
