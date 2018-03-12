@@ -2,7 +2,6 @@ import React from 'react'
 
 class Login extends React.Component {
     Login() {
-        console.log('hehe')
         this.props.history.push('/index')
     }
     render() {
