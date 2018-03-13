@@ -1,12 +1,12 @@
 import Styled from 'styled-components'
 
-const buttonSize = '4.4rem'
+const buttonSize = '80px'
 
 export const Container = Styled.div`
 position: fixed;
 bottom: 0;
 width:100%;
-height:3rem;
+height:60px;
 display:flex;
 background-color:#ddd;
 padding:5px;
