@@ -7,6 +7,9 @@ import registerServiceWorker from './registerServiceWorker';
 import './assets/js/fontawesome-all.js';
 import './assets/js/flexible.js';
 
+import 'antd/dist/antd.css';
+
+
 ReactDOM.render(
     ( <Router >
         <App />

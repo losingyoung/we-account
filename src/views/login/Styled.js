@@ -6,6 +6,7 @@ width:100%;
 background:#b0eaef;
 position:relative;
 `
+
 export const LoginContainer = Styled.div`
 position: absolute;
 left:50%;
