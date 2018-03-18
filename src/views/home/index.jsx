@@ -1,6 +1,6 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
-
+import {getUserInfo} from '../../service'
 import Footer from '../../components/footer'
 import DashBoard from '../dashboard'
 import Budget from '../budget'
@@ -13,20 +13,32 @@ class Home extends React.Component {
         super(props)
         this.state = {
             routeArr: ['', 'budget', 'add', 'members', 'me'],
-            userCode: ''
+            userInfo: {}
         }
+        this.activeRoute = this.activeRoute.bind(this)
     }
     componentWillMount() {
-        console.log('1')
         if (this.props.history.replace('/', "") !== "index") {
             this.props.history.push('/index')
         }
+        getUserInfo().then(res => {
+            console.log('userinfo', res)
+            let data = res.data
+            this.setState({
+                userInfo: data.userInfo
+            })
+        })
         // getUserInfo by session
         
     }
+    activeRoute(route) {
+        let curUrl = this.props.match.url
+        let state = {userInfo: this.state.userInfo}
+        this.props.history.push({pathname: curUrl + (route ? "/" + route : ""), state})
+    }
     render() {
         let curUrl = this.props.match.url
-        let state = {userCode: this.state.userCode}
+        
         return (
             <div>
                 <Switch>
@@ -36,7 +48,7 @@ class Home extends React.Component {
                     <Route path={curUrl + '/members'}  component={Members} />
                     <Route path={curUrl + '/me'} component={Me} />
                 </Switch>
-                <Footer  activeRoute={(route) => {this.props.history.push({pathname: `${curUrl}/${route}`, state})}} routeArr={this.state.routeArr}/>
+                <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr}/>
             </div>
         )
     }
