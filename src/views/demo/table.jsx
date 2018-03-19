@@ -5,29 +5,23 @@ class Table extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            originItems: [{
-                id: 1,
-                name: 'nnn',
-                age: 222
-            }, {
-                id: 2,
-                name: 'aaa',
-                age: 233
-            }],
-            items: [{
-                id: 1,
-                name: 'nnn',
-                age: 222
-            }, {
-                id: 2,
-                name: 'aaa',
-                age: 233
-            }],
-            nextId:3
+            originItems: [],
+            items: [],
+            nextId:''
         }
     }
-    componentWillMount () {
-       
+   componentWillMount () {
+       console.log(this)
+        this.props.service.query().then(res => {
+            console.log(this)
+            // debugger
+            let data = res.data
+            this.setState({
+                originItems: data.items,
+                items: data.items,
+                nextId: data.nextId
+            })
+        })
     }
     changeValue( id, field, e) {
         const items = this.state.items
@@ -69,6 +63,14 @@ class Table extends React.Component {
         const addItems = []
         const updateItems = []
         const delItems = []
+        for (let i = 0; i<this.state.items.length; i++) {
+            console.log()
+            let num =this.state.items[i].age = parseFloat(this.state.items[i].age)
+            if (Number.isNaN(num) ) {
+                alert('age 必须是数字')
+                return
+            }
+        }
         this.state.originItems.forEach(origin => {
             let isDel = true
             this.state.items.some(item => {
@@ -82,6 +84,7 @@ class Table extends React.Component {
             }
         })
         this.state.items.forEach(item => {
+
             let isAdd = true
             this.state.originItems.some(origin => {
                if (origin.id === item.id) {
@@ -95,25 +98,31 @@ class Table extends React.Component {
                 updateItems.push(item)
             }
         })
-       await this.props.service.add(addItems)
-       await this.props.service.update(addItems)
-       await this.props.service.delete(addItems)
+      let result = await Promise.all([this.props.service.add(addItems), this.props.service.update(updateItems), this.props.service.delete(delItems)]) 
+    //    await 
+    //    await 
+    // console.log(result)
+        this.setState((preState) => {
+            return {
+                originItems: preState.items
+            }
+        })
        alert('finish')
-        console.log('add', addItems, 'update', updateItems, 'remove', delItems)
+    //     console.log('add', addItems, 'update', updateItems, 'remove', delItems)
     }
     render() {
         const tBody = this.state.items.map((item, idx) => {
             return (
                 <tr key={idx}>{columns.map(field => {
-                    return <td key={field}><input value={item[field]} onChange={this.changeValue.bind(this, item.id, field)} /></td>
+                    return <td key={field}><input value={item[field]} onChange={() => {this.changeValue.bind(item.id, field)} } /></td>
                 })}
-                <td key='remove' onClick={this.deleteRow.bind(this, item.id)}><i  className='fa fa-minus-circle' /></td>
+                <td key='remove' onClick={() => {this.deleteRow(item.id)}}><i  className='fa fa-minus-circle' /></td>
                 </tr>
             )
         })
         return (
             <div>
-                <div onClick={this.addRow.bind(this)}><i className='fa fa-plus-circle' /></div>
+                <div onClick={() => {this.addRow()}}><i className='fa fa-plus-circle' /></div>
                 <table style={{width:0,margin:"0 auto"}}>
                     <thead>
                         <tr>
@@ -124,7 +133,7 @@ class Table extends React.Component {
                     <tbody>{tBody}</tbody>
                 </table>
                 <br />
-               <button onClick={this.save.bind(this)}>保存</button>
+               <button onClick={() =>{this.save()}}>保存</button>
                 
             </div>
         )

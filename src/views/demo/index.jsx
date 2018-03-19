@@ -10,12 +10,12 @@ const TabPane = Tabs.TabPane;
 class Demo extends React.Component {
     render() {
         return (
-            <div>Demo
+            <div>Node Demo
                 <Tabs>
-                  <TabPane tab="Express" key="1">
+                  <TabPane tab="Express + MongoDB" key="1">
                     <DemoTable service={expressService} generateKey={true}></DemoTable>
                   </TabPane>
-                  <TabPane tab="Koa" key="2">
+                  <TabPane tab="Koa + MySql" key="2">
                   <DemoTable service={koaService} generateKey={false}></DemoTable>
                   </TabPane>
                 </Tabs>
