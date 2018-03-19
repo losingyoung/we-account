@@ -1,6 +1,6 @@
 import Styled from 'styled-components'
 
-const buttonSize = '80px'
+const buttonSize = '70px'
 
 export const Container = Styled.div`
 position: fixed;
@@ -17,7 +17,7 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-color:${props => props.active ? "#009aff" : "#fff"};
+color:${props => props.active ? "#108ee9" : "#fff"};
 `
 export const PlaceholderButton = Styled.div`
 width:${buttonSize};
@@ -25,7 +25,7 @@ height:${buttonSize};
 `
 export const AddButton = Styled.div`
 border-radius:100%;
-background:green;
+background:#108ee9;
 position:fixed;
 bottom:0;
 width:${buttonSize};

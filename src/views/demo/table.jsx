@@ -77,7 +77,8 @@ class Table extends React.Component {
                if (origin.id === item.id) {
                 isDel = false
                 return true
-               }              
+               }
+               return false              
             })
             if (isDel) {
                 delItems.push(origin)
@@ -90,7 +91,8 @@ class Table extends React.Component {
                if (origin.id === item.id) {
                 isAdd = false
                 return true
-               }              
+               }        
+               return false      
             })
             if (isAdd) {
                 addItems.push(item)

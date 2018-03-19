@@ -2,6 +2,12 @@ import axios from 'axios'
 
 export const signUp = params => axios.post('/api/user/signup', params)
 
+export const getUserInfo = params => axios.post('/api/user/get_user_info', params)
+
+
+
+
+
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)
