@@ -1,5 +1,7 @@
 import React from 'react'
-import {DatePicker, Picker, List, NavBar, WhiteSpace} from 'antd-mobile';
+import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem} from 'antd-mobile';
+import './index.css'
+import SwitchButton from '../../components/switch-button'
 function Title(props) {
     return (
         <div
@@ -36,14 +38,15 @@ class Add extends React.Component {
             curForValue: null, // 个人或某个组
             dateValue: '',
             userInfo: null,
-            memberValue: null //属于某个组员的
+            memberValue: null, //属于某个组员的
+            inOutType: 'on'
         }
     }
     componentWillMount() {
         this._isMounted = true
         let userInfo  = (this.props.location.state && this.props.location.state.userInfo) || {}
         let groupInfos = (this.props.location.state && this.props.location.state.groupInfos) || {}
-        setTimeout(() => {
+        // setTimeout(() => {
             if (!this._isMounted) {
                 return
             }
@@ -69,7 +72,7 @@ class Add extends React.Component {
                 ownerSelectData,
                 userInfo: user
             })
-        }, 500)
+        // }, 500)
     }
     componentWillUnmount(a) {
         this._isMounted = false
@@ -102,6 +105,12 @@ class Add extends React.Component {
         console.log('change mem', value)
         this.setState({
             memberValue: value
+        })
+    }
+    // 收入 支出
+    switchInOutType = (value) => {
+        this.setState({
+            inOutType: value
         })
     }
     getOwnerPicker(ownerData) {
@@ -173,7 +182,17 @@ class Add extends React.Component {
                 </DatePicker>
                 <WhiteSpace size='xs' />
                 {memberData ? this.getGroupUserPciker({...state, memberData: memberData.members.map(member => {return Object.assign({}, member, {value: member.wa_code, label: member.name})}), changeMemberValue: this.changeMemberValue}) : this.getUserPciker(state)}
-
+                <WhiteSpace size='xs' />
+                <List>
+                <InputItem
+                    type={"number"}
+                    clear
+                    onChange={(v) => { console.log('onChange', v); }}
+                    onBlur={(v) => { console.log('onBlur', v); }}
+                    className="switch-input"
+                ><SwitchButton onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
+                </InputItem>
+                </List>
             </div>
         )
     }

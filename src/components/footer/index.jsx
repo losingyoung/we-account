@@ -10,6 +10,7 @@ class Footer extends React.Component {
         };
     }
     clickTab(index) {
+        console.log('cc')
      this.setState({
         activeTab: index
      })
@@ -27,7 +28,9 @@ class Footer extends React.Component {
                     <Styled.TabIcon className='fas fa-clipboard'/>
                     <Styled.TabTitle>预算</Styled.TabTitle>
                 </Styled.TabItem>
-                <Styled.AddButton onClick={(e) => {this.clickTab(2)}}></Styled.AddButton>
+                <Styled.AddButton onClick={(e) => {this.clickTab(2)}} active={this.state.activeTab === 2}>
+                  <i className="fa fa-plus-circle" />
+                </Styled.AddButton>
                 <Styled.PlaceholderButton/>
                 <Styled.TabItem onClick={(e) => {this.clickTab(3)}} active={this.state.activeTab === 3}>
                     <Styled.TabIcon className='fas fa-users'/>
