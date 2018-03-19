@@ -1,12 +1,12 @@
 import axios from 'axios'
-
+/*user*/
 export const signUp = params => axios.post('/api/user/signup', params)
 
 export const getUserInfo = params => axios.post('/api/user/get_user_info', params)
 
 
-
-
+/* Group */
+export const getGroups = params => axios.post('/api/group/get_groups_by_wa_code', params)
 
 export const koaService = {
     query(params) {

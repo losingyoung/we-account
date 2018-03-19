@@ -100,7 +100,7 @@ class Table extends React.Component {
                 updateItems.push(item)
             }
         })
-      let result = await Promise.all([this.props.service.add(addItems), this.props.service.update(updateItems), this.props.service.delete(delItems)]) 
+     await Promise.all([this.props.service.add(addItems), this.props.service.update(updateItems), this.props.service.delete(delItems)]) 
     //    await 
     //    await 
     // console.log(result)
