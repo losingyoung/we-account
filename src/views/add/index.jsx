@@ -2,7 +2,8 @@ import React from 'react'
 import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem, TextareaItem} from 'antd-mobile';
 import './index.css'
 import SwitchButton from '../../components/switch-button'
-import ii from '../../assets/icon_item/bus.svg'
+import ICONS from './icon'
+import Styled from 'styled-components'
 function Title(props) {
     return (
         <div
@@ -23,6 +24,32 @@ const TYPE = {
     PERSONAL: "0",
     GROUP: "1"
 }
+const CategoryArea = Styled.div`
+background:#fff;
+min-height:44px;
+
+display:flex;
+padding:0 7px;
+  .cate-item-wrapper{
+      padding:8px;
+      border:solid #fff 1px;
+      border-radius:5px;
+      &.active{
+          border-color:black;
+          box-shadow: 0px 0px 5px inset;
+          color: #108ee9;
+      }
+    img,svg {
+        width:40px;
+        
+    }
+    svg{
+        height:100%;
+    }
+  }
+
+`
+
 /* <div style={{ display: 'flex'}}>
             <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}></div>
              <div style={{ textAlign: 'right', color: '#888', marginRight: 15 }}>{props.extra}</div>
@@ -50,7 +77,25 @@ class Add extends React.Component {
                     label: '支出'
                 }
             },
-            inOutType: 'income'
+            inOutType: 'income',
+            categoryInfo: [{
+                id: 123,
+                type: 'sports',
+                title: '运动'
+            }, {
+                id: 1234,
+                type: 'transport',
+                title: '交通'
+            }, {
+                id: 12345,
+                type: 'travel',
+                title: '旅游'
+            }, {
+                id: 123456,
+                type: 'photo',
+                title: '摄影'
+            }],
+            activeCate: null
         }
     }
     componentWillMount() {
@@ -122,6 +167,12 @@ class Add extends React.Component {
     switchInOutType = (value) => {
         this.setState({
             inOutType: value
+        })
+    }
+    // category
+    clickCategory = (cateId) => {
+        this.setState({
+            activeCate: cateId
         })
     }
     getOwnerPicker(ownerData) {
@@ -205,6 +256,18 @@ class Add extends React.Component {
                     </InputItem>
                 </List>
                 <WhiteSpace size='xs' />
+                <CategoryArea>
+                   {state.categoryInfo.map(cate =>{
+                       return (
+                           <div key={cate.id} className={`cate-item-wrapper ${cate.id === state.activeCate ? "active" : ""}`} onClick={() => {this.clickCategory(cate.id)}}>
+                             <img src={ICONS[cate.type]} alt={cate.title} />
+                             <div>{cate.title}</div>
+                           </div>
+                       )
+                   } ) }
+                   <span className='cate-item-wrapper'><i class='fa fa-plus-circle'></i></span>
+                </CategoryArea>
+                <WhiteSpace size='xs' />
                 <List >
                     <TextareaItem
                         // title="高度自适应"
@@ -216,7 +279,6 @@ class Add extends React.Component {
                 </List>
                 <WhiteSpace size='xs' />
 
-                <img src={ii} alt="any"/>
                 
             </div>
         )
