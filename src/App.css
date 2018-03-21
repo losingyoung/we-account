@@ -15,7 +15,8 @@ html, body{
   text-align: center;
   background-color: #eee;
 }
-input{
+
+.price-input .am-input-control input{
   text-align:right;
 }
 

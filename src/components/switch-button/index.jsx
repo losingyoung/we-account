@@ -7,8 +7,8 @@ export default class SwitchButton extends React.Component{
    render() {
        let props = this.props
        let activeSide = props.data.left.value === props.value ? "left" : "right"
-       let leftLabel = activeSide === "left" ? props.data.left.label : ""
-       let rightLabel = activeSide === "right" ? props.data.right.label : ""
+       let leftLabel = props.data.left.label //activeSide === "left" ? props.data.left.label : ""
+       let rightLabel = props.data.right.label //activeSide === "right" ? props.data.right.label : ""
        return (
            <Styled.SwitchContainer>
                <Styled.LeftButton onClick={() => {props.onSwitch(props.data.left.value)}} active={activeSide === 'left'} activeColor={props.activeColor.left} closeColor={props.closeColor}>{leftLabel}</Styled.LeftButton>
@@ -21,14 +21,14 @@ export default class SwitchButton extends React.Component{
 SwitchButton.propTypes = {
     value:PropTypes.any,
     data:PropTypes.shape({
-        left: {
+        left: PropTypes.shape({
             value: PropTypes.any,
             label: PropTypes.string
-        },
-        right: {
+        }),
+        right: PropTypes.shape({
             value: PropTypes.any,
             label: PropTypes.string
-        }
+        })
     }),
     leftText:PropTypes.string,
     rightText:PropTypes.string,

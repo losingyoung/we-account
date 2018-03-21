@@ -1,3 +1,10 @@
 .switch-input.am-list-item .am-input-label.am-input-label-5{
   width:160px;
 }
+.add-description .am-textarea-control textarea{
+    min-height:75px;
+}
+
+.switch-input .am-input-control input{
+    text-align: right;
+}

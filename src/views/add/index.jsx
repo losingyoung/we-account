@@ -1,7 +1,8 @@
 import React from 'react'
-import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem} from 'antd-mobile';
+import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem, TextareaItem} from 'antd-mobile';
 import './index.css'
 import SwitchButton from '../../components/switch-button'
+import ii from '../../assets/icon_item/bus.svg'
 function Title(props) {
     return (
         <div
@@ -39,7 +40,17 @@ class Add extends React.Component {
             dateValue: '',
             userInfo: null,
             memberValue: null, //属于某个组员的
-            inOutType: 'on'
+            inOutData: {
+                left: {
+                    value: 'income',
+                    label: '收入'
+                },
+                right: {
+                    value: 'spending',
+                    label: '支出'
+                }
+            },
+            inOutType: 'income'
         }
     }
     componentWillMount() {
@@ -169,10 +180,9 @@ class Add extends React.Component {
         let leftIcon = '' // <Icon type="left" />
         let ownerData = state.ownerSelectData
         let memberData = state.memberData
-        console.log('mem',memberData)
-        console.log('state',state)
+        // console.log('switch', this.switchInOutType, state.inOutType)
         return (
-            <div>
+            <div className="add-wrapper">
                 <NavBar mode="dark" icon={leftIcon} onLeftClick={this.goBack}>
                   {this.getOwnerPicker(ownerData)}
                 </NavBar>
@@ -183,16 +193,31 @@ class Add extends React.Component {
                 <WhiteSpace size='xs' />
                 {memberData ? this.getGroupUserPciker({...state, memberData: memberData.members.map(member => {return Object.assign({}, member, {value: member.wa_code, label: member.name})}), changeMemberValue: this.changeMemberValue}) : this.getUserPciker(state)}
                 <WhiteSpace size='xs' />
-                <List>
-                <InputItem
-                    type={"number"}
-                    clear
-                    onChange={(v) => { console.log('onChange', v); }}
-                    onBlur={(v) => { console.log('onBlur', v); }}
-                    className="switch-input"
-                ><SwitchButton onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
-                </InputItem>
+                <List key='price'>
+                    <InputItem
+                        type={"number"}
+                        placeholder="元"
+                        clear
+                        onChange={(v) => { console.log('onChange', v); }}
+                        onBlur={(v) => { console.log('onBlur', v); }}
+                        className="switch-input"
+                    ><SwitchButton data={state.inOutData} onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
+                    </InputItem>
                 </List>
+                <WhiteSpace size='xs' />
+                <List >
+                    <TextareaItem
+                        // title="高度自适应"
+                        autoHeight
+                        placeholder="描述一下..."
+                        key='description'
+                        className="add-description"
+                    />
+                </List>
+                <WhiteSpace size='xs' />
+
+                <img src={ii} alt="any"/>
+                
             </div>
         )
     }
