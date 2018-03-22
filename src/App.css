@@ -16,6 +16,9 @@ html, body{
   background-color: #eee;
 }
 
+.price-input .am-input-control input{
+  text-align:right;
+}
 
 .am-list-item.am-input-item{
   padding-right:15px;

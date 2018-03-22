@@ -1,7 +1,9 @@
 import React from 'react'
-import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem} from 'antd-mobile';
+import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem, TextareaItem} from 'antd-mobile';
 import './index.css'
 import SwitchButton from '../../components/switch-button'
+import ICONS from './icon'
+import Styled from 'styled-components'
 function Title(props) {
     return (
         <div
@@ -22,6 +24,32 @@ const TYPE = {
     PERSONAL: "0",
     GROUP: "1"
 }
+const CategoryArea = Styled.div`
+background:#fff;
+min-height:44px;
+
+display:flex;
+padding:0 7px;
+  .cate-item-wrapper{
+      padding:8px;
+      border:solid #fff 1px;
+      border-radius:5px;
+      &.active{
+          border-color:black;
+          box-shadow: 0px 0px 5px inset;
+          color: #108ee9;
+      }
+    img,svg {
+        width:40px;
+        
+    }
+    svg{
+        height:100%;
+    }
+  }
+
+`
+
 /* <div style={{ display: 'flex'}}>
             <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}></div>
              <div style={{ textAlign: 'right', color: '#888', marginRight: 15 }}>{props.extra}</div>
@@ -39,7 +67,35 @@ class Add extends React.Component {
             dateValue: '',
             userInfo: null,
             memberValue: null, //属于某个组员的
-            inOutType: 'on'
+            inOutData: {
+                left: {
+                    value: 'income',
+                    label: '收入'
+                },
+                right: {
+                    value: 'spending',
+                    label: '支出'
+                }
+            },
+            inOutType: 'income',
+            categoryInfo: [{
+                id: 123,
+                type: 'sports',
+                title: '运动'
+            }, {
+                id: 1234,
+                type: 'transport',
+                title: '交通'
+            }, {
+                id: 12345,
+                type: 'travel',
+                title: '旅游'
+            }, {
+                id: 123456,
+                type: 'photo',
+                title: '摄影'
+            }],
+            activeCate: null
         }
     }
     componentWillMount() {
@@ -113,6 +169,12 @@ class Add extends React.Component {
             inOutType: value
         })
     }
+    // category
+    clickCategory = (cateId) => {
+        this.setState({
+            activeCate: cateId
+        })
+    }
     getOwnerPicker(ownerData) {
         if (ownerData) {
             return (
@@ -169,10 +231,9 @@ class Add extends React.Component {
         let leftIcon = '' // <Icon type="left" />
         let ownerData = state.ownerSelectData
         let memberData = state.memberData
-        console.log('mem',memberData)
-        console.log('state',state)
+        // console.log('switch', this.switchInOutType, state.inOutType)
         return (
-            <div>
+            <div className="add-wrapper">
                 <NavBar mode="dark" icon={leftIcon} onLeftClick={this.goBack}>
                   {this.getOwnerPicker(ownerData)}
                 </NavBar>
@@ -183,17 +244,42 @@ class Add extends React.Component {
                 <WhiteSpace size='xs' />
                 {memberData ? this.getGroupUserPciker({...state, memberData: memberData.members.map(member => {return Object.assign({}, member, {value: member.wa_code, label: member.name})}), changeMemberValue: this.changeMemberValue}) : this.getUserPciker(state)}
                 <WhiteSpace size='xs' />
-                <List>
-                <InputItem
-                    type={"number"}
-                    clear
-                    onChange={(v) => { console.log('onChange', v); }}
-                    onBlur={(v) => { console.log('onBlur', v); }}
-                    className="switch-input"
-                >
-                <SwitchButton onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
-                </InputItem>
+                <List key='price'>
+                    <InputItem
+                        type={"number"}
+                        placeholder="元"
+                        clear
+                        onChange={(v) => { console.log('onChange', v); }}
+                        onBlur={(v) => { console.log('onBlur', v); }}
+                        className="switch-input"
+                    ><SwitchButton data={state.inOutData} onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
+                    </InputItem>
                 </List>
+                <WhiteSpace size='xs' />
+                <CategoryArea>
+                   {state.categoryInfo.map(cate =>{
+                       return (
+                           <div key={cate.id} className={`cate-item-wrapper ${cate.id === state.activeCate ? "active" : ""}`} onClick={() => {this.clickCategory(cate.id)}}>
+                             <img src={ICONS[cate.type]} alt={cate.title} />
+                             <div>{cate.title}</div>
+                           </div>
+                       )
+                   } ) }
+                   <span className='cate-item-wrapper'><i class='fa fa-plus-circle'></i></span>
+                </CategoryArea>
+                <WhiteSpace size='xs' />
+                <List >
+                    <TextareaItem
+                        // title="高度自适应"
+                        autoHeight
+                        placeholder="描述一下..."
+                        key='description'
+                        className="add-description"
+                    />
+                </List>
+                <WhiteSpace size='xs' />
+
+                
             </div>
         )
     }
