@@ -1,3 +1,6 @@
 .switch-input.am-list-item .am-input-label.am-input-label-5{
   width:160px;
 }
+.switch-input input{
+  text-align: right;
+}

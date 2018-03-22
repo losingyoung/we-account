@@ -190,7 +190,8 @@ class Add extends React.Component {
                     onChange={(v) => { console.log('onChange', v); }}
                     onBlur={(v) => { console.log('onBlur', v); }}
                     className="switch-input"
-                ><SwitchButton onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
+                >
+                <SwitchButton onSwitch={this.switchInOutType} value={state.inOutType}></SwitchButton>
                 </InputItem>
                 </List>
             </div>
