@@ -1,18 +1,19 @@
 import React from 'react'
-import {DatePicker, Picker, List, NavBar, WhiteSpace, InputItem, TextareaItem} from 'antd-mobile';
+import { DatePicker, Picker, List, NavBar, WhiteSpace, InputItem, TextareaItem } from 'antd-mobile';
 import './index.css'
 import SwitchButton from '../../components/switch-button'
 import ICONS from './icon'
 import Styled from 'styled-components'
+import * as Service from '../../service'
 function Title(props) {
     return (
         <div
             onClick={props.onClick}
             style={{
-            padding: "5px 15px",
-            display: "flex",
-            "alignItems": "center"
-        }}>
+                padding: "5px 15px",
+                display: "flex",
+                "alignItems": "center"
+            }}>
             <div style={{
                 "marginRight": "5px"
             }}>{props.extra}</div>
@@ -24,28 +25,40 @@ const TYPE = {
     PERSONAL: "0",
     GROUP: "1"
 }
+const Blue = "#108ee9"
+const screenWidth = document.documentElement && document.documentElement.clientWidth || window.innerWidth
+const oneLineCount = screenWidth >= 375 ? 7 : 5
+const iconWidth = (screenWidth - 14) / oneLineCount - 20
 const CategoryArea = Styled.div`
 background:#fff;
 min-height:44px;
-
 display:flex;
+flex-wrap:wrap;
 padding:0 7px;
+
   .cate-item-wrapper{
-      padding:8px;
+      padding:9px;
       border:solid #fff 1px;
       border-radius:5px;
+      position:relative;
       &.active{
           border-color:black;
           box-shadow: 0px 0px 5px inset;
-          color: #108ee9;
+          color: ${Blue};
       }
-    img,svg {
-        width:40px;
-        
-    }
-    svg{
-        height:100%;
-    }
+      .del-icon{
+          position:absolute;
+          top:-5px;
+          right:-10px;
+          height:10px;
+      }
+      img,svg {
+            width:${iconWidth}px;
+      }
+      svg{
+            color: ${Blue};
+            height:100%;
+      }
   }
 
 `
@@ -78,63 +91,59 @@ class Add extends React.Component {
                 }
             },
             inOutType: 'income',
-            categoryInfo: [{
-                id: 123,
-                type: 'sports',
-                title: '运动'
-            }, {
-                id: 1234,
-                type: 'transport',
-                title: '交通'
-            }, {
-                id: 12345,
-                type: 'travel',
-                title: '旅游'
-            }, {
-                id: 123456,
-                type: 'photo',
-                title: '摄影'
-            }],
-            activeCate: null
+            categoryInfo: [],
+            activeCate: null,
+            editIconMode: false
         }
     }
-    componentWillMount() {
+    async componentWillMount() {
         this._isMounted = true
-        let userInfo  = (this.props.location.state && this.props.location.state.userInfo) || {}
+        let userInfo = (this.props.location.state && this.props.location.state.userInfo) || {}
         let groupInfos = (this.props.location.state && this.props.location.state.groupInfos) || {}
-        // setTimeout(() => {
-            if (!this._isMounted) {
-                return
+        if (!this._isMounted) {
+            return
+        }
+        let user =
+            {
+                value: userInfo.wa_code,
+                label: userInfo.name,
+                type: TYPE.PERSONAL,
+                ...userInfo
             }
-            let user = 
-                {
-                    value: userInfo.wa_code,
-                    label: userInfo.name,
-                    type: TYPE.PERSONAL,
-                    ...userInfo
-                }
-            
-            let ownerSelectData = [[user].concat(groupInfos.map(group => {
-                    return {
-                        value: group.id,
-                        label: group.name,
-                        type: TYPE.GROUP,
-                        ...group
-                    }
-                }))]
-            let curForValue = (this.props.location.state && this.props.location.state.curFor && this.props.location.state && this.props.location.state.curFor.value) || userInfo.wa_code
-            this.setState({
-                curForValue, 
-                ownerSelectData,
-                userInfo: user
-            })
-        // }, 500)
+
+        let ownerSelectData = [[user].concat(groupInfos.map(group => {
+            return {
+                value: group.id,
+                label: group.name,
+                type: TYPE.GROUP,
+                ...group
+            }
+        }))]
+        let curForValue = userInfo.wa_code
+        let type = TYPE.PERSONAL
+        if (this.props.location.state && this.props.location.state.curFor && this.props.location.state.curFor.value) {
+            curForValue = this.props.location.state.curFor.value
+            type = this.props.location.state.curFor.type
+        }
+        let cateIcons;
+        if (type === TYPE.PERSONAL) {
+            cateIcons = await Service.getPersonalIcons({ wa_code: curForValue })
+        } else {
+            cateIcons = await Service.getGroupIcons({ group_id: curForValue })
+        }
+        console.log('cc', cateIcons)
+        this.setState({
+            curForValue,
+            ownerSelectData,
+            userInfo: user,
+            categoryInfo: cateIcons.data
+        })
     }
     componentWillUnmount(a) {
         this._isMounted = false
     }
     goBack() {
-        console.log('back')
+        // console.log('back')
     }
     // 为谁加
     setOwnerPickerData = ([curForValue]) => {
@@ -150,15 +159,14 @@ class Add extends React.Component {
         })
         console.log(this.props)
         // this.props.changeOwnerPreference({value: curForValue, type: memberData ? TYPE.GROUP : TYPE.PERSONAL})
-        this.setState({curForValue, memberData, memberValue: []})
+        this.setState({ curForValue, memberData, memberValue: [] })
     }
     // 更改日期
     changeDate = (value) => {
-        this.setState({dateValue: value})
+        this.setState({ dateValue: value })
     }
     //更改人员
     changeMemberValue = (value) => {
-        console.log('change mem', value)
         this.setState({
             memberValue: value
         })
@@ -171,9 +179,22 @@ class Add extends React.Component {
     }
     // category
     clickCategory = (cateId) => {
+        if (this.editIconMode) {
+            return false
+        }
         this.setState({
             activeCate: cateId
         })
+    }
+    changeToEditMode = () => {
+        console.log('ccc')
+        this.setState({
+            editIconMode: true
+        })
+    }
+    //delete cate icon
+    DelIcon = (cate_id) => {
+        console.log('del')
     }
     getOwnerPicker(ownerData) {
         if (ownerData) {
@@ -197,7 +218,7 @@ class Add extends React.Component {
             )
         }
     }
-    getUserPciker (props) {
+    getUserPciker(props) {
         if (!props.userInfo) {
             return null
         }
@@ -206,10 +227,10 @@ class Add extends React.Component {
                 cascade={false}
                 data={[[props.userInfo]]}
                 value={[props.curForValue]}
-                disabled = {true}
+                disabled={true}
             >
-            <List.Item >人员</List.Item>
-          </Picker>
+                <List.Item >人员</List.Item>
+            </Picker>
         )
     }
     getGroupUserPciker(props) {
@@ -222,7 +243,7 @@ class Add extends React.Component {
                 onOk={props.changeMemberValue}
                 value={props.memberValue || []}
             >
-              <List.Item arrow="horizontal">人员</List.Item>
+                <List.Item arrow="horizontal">人员</List.Item>
             </Picker>
         )
     }
@@ -235,14 +256,14 @@ class Add extends React.Component {
         return (
             <div className="add-wrapper">
                 <NavBar mode="dark" icon={leftIcon} onLeftClick={this.goBack}>
-                  {this.getOwnerPicker(ownerData)}
+                    {this.getOwnerPicker(ownerData)}
                 </NavBar>
                 <WhiteSpace size='xs' />
                 <DatePicker mode="date" value={state.dateValue} onOk={this.changeDate}>
                     <List.Item arrow="horizontal">日期</List.Item>
                 </DatePicker>
                 <WhiteSpace size='xs' />
-                {memberData ? this.getGroupUserPciker({...state, memberData: memberData.members.map(member => {return Object.assign({}, member, {value: member.wa_code, label: member.name})}), changeMemberValue: this.changeMemberValue}) : this.getUserPciker(state)}
+                {memberData ? this.getGroupUserPciker({ ...state, memberData: memberData.members.map(member => { return Object.assign({}, member, { value: member.wa_code, label: member.name }) }), changeMemberValue: this.changeMemberValue }) : this.getUserPciker(state)}
                 <WhiteSpace size='xs' />
                 <List key='price'>
                     <InputItem
@@ -257,15 +278,16 @@ class Add extends React.Component {
                 </List>
                 <WhiteSpace size='xs' />
                 <CategoryArea>
-                   {state.categoryInfo.map(cate =>{
-                       return (
-                           <div key={cate.id} className={`cate-item-wrapper ${cate.id === state.activeCate ? "active" : ""}`} onClick={() => {this.clickCategory(cate.id)}}>
-                             <img src={ICONS[cate.type]} alt={cate.title} />
-                             <div>{cate.title}</div>
-                           </div>
-                       )
-                   } ) }
-                   <span className='cate-item-wrapper'><i class='fa fa-plus-circle'></i></span>
+                    {state.categoryInfo.map(cate => {
+                        return (
+                            <div key={cate.id} className={`cate-item-wrapper ${!state.editIconMode && cate.id === state.activeCate ? "active" : ""}`} onClick={() => { this.clickCategory(cate.id) }}>
+                                <img src={ICONS[cate.type]} alt={cate.title} />
+                                <div>{cate.title}</div>
+                               {state.editIconMode && (<span className="del-icon" onClick={() => {this.DelIcon(cate.id)}}><i className="fa fa-trash-alt" /></span>)} 
+                            </div>
+                        )
+                    })}
+                    {state.editIconMode ? <span className='cate-item-wrapper' key="add"><i className='fa fa-plus-circle'></i></span> : <span className='cate-item-wrapper' onClick={this.changeToEditMode} key="setting"><i className='fa fa-cog'></i></span>}
                 </CategoryArea>
                 <WhiteSpace size='xs' />
                 <List >
@@ -279,7 +301,7 @@ class Add extends React.Component {
                 </List>
                 <WhiteSpace size='xs' />
 
-                
+
             </div>
         )
     }
