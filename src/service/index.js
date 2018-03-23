@@ -8,6 +8,13 @@ export const getUserInfo = params => axios.post('/api/user/get_user_info', param
 /* Group */
 export const getGroups = params => axios.post('/api/group/get_groups_by_wa_code', params)
 
+
+
+/* category icons*/
+
+export const getPersonalIcons = params => axios.post('/api/cate_icon/get_personal_icons', params)
+export const getGroupIcons = params => axios.post('/api/cate_icon/get_group_icons', params)
+
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)
