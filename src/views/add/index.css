@@ -8,3 +8,16 @@
 .switch-input .am-input-control input{
     text-align: right;
 }
+.icon-edit-wrapper {
+    position: relative;
+}
+.icon-edit-wrapper .operation-buttons{
+    position: absolute;
+    right:0;
+    top:0;
+}
+.icon-edit-wrapper .operation-buttons svg{
+    height:24px;
+    width:24px;
+    color:#1AAD16;
+}
