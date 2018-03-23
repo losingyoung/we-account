@@ -10,7 +10,6 @@ class Footer extends React.Component {
         };
     }
     clickTab(index) {
-        console.log('cc')
      this.setState({
         activeTab: index
      })

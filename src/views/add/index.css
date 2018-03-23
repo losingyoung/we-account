@@ -11,6 +11,9 @@
 .icon-edit-wrapper {
     position: relative;
 }
+.icon-edit-wrapper .icons-container{
+    padding-top:10px;
+}
 .icon-edit-wrapper .operation-buttons{
     position: absolute;
     right:0;
@@ -20,4 +23,7 @@
     height:24px;
     width:24px;
     color:#1AAD16;
+}
+.icon-edit-wrapper .title-container input{
+    border:1px solid #eee;
 }

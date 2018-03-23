@@ -6,6 +6,7 @@
     "antd": "^3.3.0",
     "antd-mobile": "^2.1.6",
     "axios": "^0.18.0",
+    "immutable": "^3.8.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-router-dom": "^4.2.2",
