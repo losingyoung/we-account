@@ -1,3 +1,7 @@
+.add-wrapper{
+    /* max-height: calc(100% - 270px); */
+    overflow:scroll;
+}
 .switch-input.am-list-item .am-input-label.am-input-label-5{
   width:160px;
 }

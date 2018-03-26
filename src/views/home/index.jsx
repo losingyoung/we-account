@@ -71,6 +71,7 @@ class Home extends React.Component {
                     <Route path={curUrl + '/members'}  component={Members} />
                     <Route path={curUrl + '/me'} component={Me}  />
                 </Switch>
+                <div style={{height:"70px"}} className='placeholder'/>
                 <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr}/>
             </div>
         )

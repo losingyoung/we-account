@@ -1,5 +1,5 @@
 import React from 'react'
-import { fromJS } from 'immutable'
+import { Map, fromJS } from 'immutable'
 import {
     DatePicker,
     Picker,
@@ -8,7 +8,8 @@ import {
     WhiteSpace,
     InputItem,
     TextareaItem,
-    Modal
+    Modal,
+    Button
 } from 'antd-mobile';
 import './index.css'
 import SwitchButton from '../../components/switch-button'
@@ -29,7 +30,7 @@ const CategoryArea = Styled.div`
     flex-wrap:wrap;
     padding:0 7px;
     .cate-item-wrapper{
-        padding:9px;
+        padding-bottom:9px;
         border:solid #fff 1px;
         border-radius:5px;
         position:relative;
@@ -38,24 +39,31 @@ const CategoryArea = Styled.div`
             box-shadow: 0px 0px 5px inset;
             color: ${Blue};
         }
+        &.edit-setting-icon{
+            padding:9px;
+        }
+        .icon-title-wrapper{
+            width:${props => props.iconWidth ? props.iconWidth + 18 : 48}px;
+        }
         .edit-icon{
-            position: absolute;
-            bottom: 17px;
-            right: 0;
+            position: relative;
             height:12px;
             svg{
                 height:12px;
                 width:12px;
             }
-            
         }
         .del-icon{
             position:absolute;
-            top:2px;
-            right:-10px;
+            top:0px;
+            right:0px;
             height:12px;
         }
-        img,svg {
+        .icon-img{
+            margin:9px;
+            margin-bottom:0;
+        }
+        .icon-img, >svg{
             width:${props => props.iconWidth ? props.iconWidth : 30}px;
         }
         svg{
@@ -146,7 +154,7 @@ class IconEditBox extends React.Component {
                                         onClick={() => {
                                             this.setActiveIcon(type)
                                         }}>
-                                        <img src={ICONS[type]} alt={type} />
+                                        <img className="icon-img" src={ICONS[type]} alt={type} />
                                     </div>
                                 )
                             })}
@@ -162,6 +170,8 @@ class IconEditBox extends React.Component {
 class Add extends React.Component {
     constructor(props) {
         super(props)
+        this.mode = null
+        this.nextIconId = null
         this.goBack = this
             .goBack
             .bind(this)
@@ -231,6 +241,9 @@ class Add extends React.Component {
     componentWillUnmount(a) {
         this._isMounted = false
     }
+    getNextIconId() {
+        return this.nextIconId
+    }
     goBack() {
         // console.log('back')
     }
@@ -241,7 +254,9 @@ class Add extends React.Component {
         } else {
             cateIcons = await Service.getGroupIcons({ group_id: curForValue })
         }
-        this.setState({ categoryInfo: fromJS(cateIcons.data), activeCate: null, editIconMode: false })
+        let data = cateIcons.data
+        this.nextIconId = data.nextIconId
+        this.setState({ categoryInfo: fromJS(data.icons), activeCate: null, editIconMode: false })
     }
     // 为谁加
     setOwnerPickerData = ([curForValue]) => {
@@ -314,6 +329,7 @@ class Add extends React.Component {
                         })
                         return true
                     }
+                    return false
                 })
 
                 // (index >= 0 && this.setState({
@@ -333,7 +349,7 @@ class Add extends React.Component {
         console.log('confirm', this.state.activeCate, title, activeCateType)
         const { memberData, userInfo, curForValue, categoryInfo } = this.state
 
-        let id = this.state.activeCate.get('id')
+        
         let params = {
             forType: TYPE.PERSONAL,
             wa_code: userInfo.wa_code
@@ -343,15 +359,51 @@ class Add extends React.Component {
             params.group_id = curForValue
         }
         if (this.mode === 'update') {
-           let newCate = this.state.activeCate.set("title", title).set("type", activeCateType)
-           let newParams = newCate.merge(params)
+            let id = this.state.activeCate.get('id')
+           let updatedCate = this.state.activeCate.set("title", title).set("type", activeCateType)
+           let newParams = updatedCate.merge(params)
            Service.updateCate(newParams.toJS()).then(res => {
-            categoryInfo.some((item, idx) => {
-                if (item.get("id") === id) {
-                    console.log('update this')
-                }
-            })
+               let data = res.data
+               if (data.success) {
+                categoryInfo.some((item, idx) => {
+                    if (item.get("id") === id) {
+                       this.setState({
+                        categoryInfo:categoryInfo.setIn([idx, "title"], title).setIn([idx, "type"], activeCateType),
+                        showIconEditModal: false
+                       }) 
+                        return true
+                    }
+                    return false
+                })
+               }
+
            })
+        } else if (this.mode === 'add') {
+            if (!title) {
+                alert('请输入名称')
+                return
+            }
+            if (!activeCateType) {
+                alert('请选择类别')
+                return     
+            }
+            let iconId = this.getNextIconId()
+            let newCate = {
+                id: iconId,
+                title,
+                type: activeCateType
+            }
+            let newParams =  Object.assign({}, params, newCate)
+            // console.log('add', categoryInfo.push(newCate))
+            Service.addCate(newParams).then(res => {
+               let data = res.data
+               this.nextIconId = data.nextIconId
+               this.setState({
+                   categoryInfo: categoryInfo.push(Map(newCate)),
+                   showIconEditModal: false
+               })
+            })
+
         }
 
 
@@ -419,9 +471,9 @@ class Add extends React.Component {
         let ownerData = state.ownerSelectData
         let memberData = state.memberData
         const screenWidth = (document.documentElement && document.documentElement.clientWidth) || window.innerWidth
-        const oneLineCount = screenWidth >= 375
-            ? 7
-            : 5
+        const oneLineCount = screenWidth < 375
+            ? 5
+            : (screenWidth <414 ? 6 : 7)
         const iconWidth = (screenWidth - 14) / oneLineCount - 20
 
         return (
@@ -481,12 +533,16 @@ class Add extends React.Component {
                                     onClick={() => {
                                         this.clickCategory(cate)
                                     }}>
-                                    <img src={ICONS[cate.get("type")]} alt={cate.get("title")} />
-                                    <div>{cate.get("title")}{state.editIconMode && (
-                                        <span
-                                            className="edit-icon"
-                                        ><i className="fa fa-edit" /></span>
-                                    )}</div>
+                                    <img src={ICONS[cate.get("type")]} className="icon-img" alt={cate.get("title")} />
+                                    <div className="icon-title-wrapper">
+                                        <span className="icon-title">{cate.get("title")}</span>
+                                        {state.editIconMode && (
+                                            <span
+                                                className="edit-icon"
+                                            ><i className="fa fa-edit" /></span>
+                                        )}
+                                    </div>
+
                                     {state.editIconMode && (
                                         <span
                                             className="del-icon"
@@ -501,16 +557,16 @@ class Add extends React.Component {
                     {state.editIconMode
                         ? (
                             <React.Fragment>
-                                <span className='cate-item-wrapper' key="add" onClick={this.handleAddCate}>
+                                <span className='cate-item-wrapper edit-setting-icon' key="add" onClick={this.handleAddCate}>
                                     <i className='fa fa-plus-circle'></i>
                                 </span>
-                                <span className='cate-item-wrapper' key="ok" onClick={this.finishEditCateIcon}>
+                                <span className='cate-item-wrapper edit-setting-icon' key="ok" onClick={this.finishEditCateIcon}>
                                     <i className='fa fa-check-circle'></i>
                                 </span>
                             </React.Fragment>
                         )
                         : <span
-                            className='cate-item-wrapper'
+                            className='cate-item-wrapper edit-setting-icon'
                             onClick={this.changeToEditMode}
                             key="setting">
                             <i className='fa fa-cog'></i>
@@ -521,6 +577,8 @@ class Add extends React.Component {
                     <TextareaItem // title="高度自适应"
                         autoHeight placeholder="描述一下..." key='description' className="add-description" />
                 </AntList>
+                <WhiteSpace size='lg' />
+                <Button type='primary'>添加+</Button>
                 <Modal
                     visible={state.showIconEditModal}
                     transparent={true}
@@ -532,7 +590,7 @@ class Add extends React.Component {
                     onClose={this.onCloseEditCateIcon}>
                     <IconEditBox title={state.activeCate && state.activeCate.get("title")} activeCateType={state.activeCate && state.activeCate.get("type")} confirmEdit={this.confirmEditCate} mode={this.mode}></IconEditBox>
                 </Modal>
-
+                <WhiteSpace size='xs' />
             </div>
         )
     }
