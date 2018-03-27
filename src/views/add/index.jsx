@@ -15,65 +15,12 @@ import {
 import './index.css'
 import SwitchButton from '../../components/switch-button'
 import ICONS from './icon'
-import Styled from 'styled-components'
+import * as Styled from './Styled'
 import * as Service from '../../service'
-// import * as Utils from '../../utils/tools'
 const TYPE = {
     PERSONAL: "0",
     GROUP: "1"
 }
-const Blue = "#108ee9"
-
-const CategoryArea = Styled.div`
-    background:#fff;
-    min-height:44px;
-    display:flex;
-    flex-wrap:wrap;
-    padding:0 7px;
-    .cate-item-wrapper{
-        padding-bottom:9px;
-        border:solid #fff 1px;
-        border-radius:5px;
-        position:relative;
-        &.active{
-            border-color:black;
-            box-shadow: 0px 0px 5px inset;
-            color: ${Blue};
-        }
-        &.edit-setting-icon{
-            padding:9px;
-        }
-        .icon-title-wrapper{
-            width:${props => props.iconWidth ? props.iconWidth + 18 : 48}px;
-        }
-        .edit-icon{
-            position: relative;
-            height:12px;
-            svg{
-                height:12px;
-                width:12px;
-            }
-        }
-        .del-icon{
-            position:absolute;
-            top:0px;
-            right:0px;
-            height:12px;
-        }
-        .icon-img{
-            margin:9px;
-            margin-bottom:0;
-        }
-        .icon-img, >svg{
-            width:${props => props.iconWidth ? props.iconWidth : 30}px;
-        }
-        svg{
-            color: ${Blue};
-            height:100%;
-        }
-    }
-`
-
 
 
 function Title(props) {
@@ -91,80 +38,6 @@ function Title(props) {
             {props.children}
         </div>
     )
-}
-// 弹出来的分类按钮编辑框
-class IconEditBox extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            title: props.title || "",
-            activeCateType: props.activeCateType,
-            iconWidth: 0
-        }
-    }
-    setActiveIcon = (type) => {
-        this.setState({
-            activeCateType: type
-        })
-    }
-    changeCateTitle = (e) => {
-        e.preventDefault()
-        this.setState({
-            title: e.target.value
-        })
-    }
-    confirmChange = () => {
-        console.log('ok mode:', this.props.mode)
-        let { title, activeCateType } = this.state
-        this.props.confirmEdit && this.props.confirmEdit({
-            title,
-            activeCateType
-        })
-    }
-    componentDidMount() {
-        // const el = document.querySelector('.icon-edit-wrapper')
-        const clientWidth = this.boxBody.clientWidth
-        const oneLineCount = 5
-        const iconWidth = (clientWidth - 14) / oneLineCount - 20
-        this.setState({
-            iconWidth
-        })
-    }
-    render() {
-        let { activeCateType, title, iconWidth } = this.state
-
-        return (
-            <div className="icon-edit-wrapper" ref={el => this.boxBody = el}>
-                <div className="title-container">
-                    <input value={title} onChange={this.changeCateTitle} />
-                </div>
-                <div className="operation-buttons">
-                    <span onClick={this.confirmChange}><i className='fa fa-check' /></span>
-                    {/* <span><i className='fa fa-times-circle'/></span> */}
-                </div>
-                <div className="icons-container">
-                    <CategoryArea iconWidth={iconWidth}>
-                        {Object.keys(ICONS)
-                            .map(type => {
-                                return (
-                                    <div
-                                        key={type}
-                                        className={`cate-item-wrapper ${type === activeCateType
-                                            ? "active"
-                                            : ""}`}
-                                        onClick={() => {
-                                            this.setActiveIcon(type)
-                                        }}>
-                                        <img className="icon-img" src={ICONS[type]} alt={type} />
-                                    </div>
-                                )
-                            })}
-                    </CategoryArea>
-                </div>
-            </div>
-        )
-    }
-
 }
 
 
@@ -298,7 +171,7 @@ class Add extends React.Component {
     // 价格变化
     changePrice = (value) => {
       value = parseFloat(value)
-      if (value === value) {
+      if (!Number.isNaN(value)) {
           this.setState({
               price: value
           })
@@ -451,6 +324,7 @@ class Add extends React.Component {
             categoryId: activeCate.get("id"),
             categoryType: activeCate.get("type"),
             categoryTitle: activeCate.get("title"),
+            inOutType,
             price,
             description
         }
@@ -579,7 +453,7 @@ class Add extends React.Component {
                 </AntList>
                 <WhiteSpace size='xs' />
                 {/* 分类信息 */}
-                <CategoryArea iconWidth={iconWidth}>
+                <Styled.CategoryArea iconWidth={iconWidth}>
                     {state
                         .categoryInfo
                         .map(cate => {
@@ -630,7 +504,7 @@ class Add extends React.Component {
                             key="setting">
                             <i className='fa fa-cog'></i>
                         </span>}
-                </CategoryArea>
+                </Styled.CategoryArea>
                 <WhiteSpace size='xs' />
                 <AntList >
                     <TextareaItem // title="高度自适应"
@@ -654,4 +528,79 @@ class Add extends React.Component {
         )
     }
 }
+// 弹出来的分类按钮编辑框
+class IconEditBox extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            title: props.title || "",
+            activeCateType: props.activeCateType,
+            iconWidth: 0
+        }
+    }
+    setActiveIcon = (type) => {
+        this.setState({
+            activeCateType: type
+        })
+    }
+    changeCateTitle = (e) => {
+        e.preventDefault()
+        this.setState({
+            title: e.target.value
+        })
+    }
+    confirmChange = () => {
+        console.log('ok mode:', this.props.mode)
+        let { title, activeCateType } = this.state
+        this.props.confirmEdit && this.props.confirmEdit({
+            title,
+            activeCateType
+        })
+    }
+    componentDidMount() {
+        // const el = document.querySelector('.icon-edit-wrapper')
+        const clientWidth = this.boxBody.clientWidth
+        const oneLineCount = 5
+        const iconWidth = (clientWidth - 14) / oneLineCount - 20
+        this.setState({
+            iconWidth
+        })
+    }
+    render() {
+        let { activeCateType, title, iconWidth } = this.state
+
+        return (
+            <div className="icon-edit-wrapper" ref={el => this.boxBody = el}>
+                <div className="title-container">
+                    <input value={title} onChange={this.changeCateTitle} />
+                </div>
+                <div className="operation-buttons">
+                    <span onClick={this.confirmChange}><i className='fa fa-check' /></span>
+                    {/* <span><i className='fa fa-times-circle'/></span> */}
+                </div>
+                <div className="icons-container">
+                    <Styled.CategoryArea iconWidth={iconWidth}>
+                        {Object.keys(ICONS)
+                            .map(type => {
+                                return (
+                                    <div
+                                        key={type}
+                                        className={`cate-item-wrapper ${type === activeCateType
+                                            ? "active"
+                                            : ""}`}
+                                        onClick={() => {
+                                            this.setActiveIcon(type)
+                                        }}>
+                                        <img className="icon-img" src={ICONS[type]} alt={type} />
+                                    </div>
+                                )
+                            })}
+                    </Styled.CategoryArea>
+                </div>
+            </div>
+        )
+    }
+
+}
+
 export default Add

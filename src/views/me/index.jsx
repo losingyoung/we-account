@@ -10,7 +10,6 @@ class Me extends React.Component {
         }
     }
     componentWillMount() {
-        
         let userInfo = (this.props.location.state && this.props.location.state.userInfo) || {}
         console.log('in me', userInfo)
         this.setState({userInfo})

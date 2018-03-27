@@ -1,10 +1,17 @@
 import React from 'react'
+import {NavBar, WhiteSpace} from 'antd-mobile'
+import GroupItem from './group-item'
 
 class Members extends React.Component {
     render() {
-        console.log(this)
         return (
-            <div>Members</div>
+            <div>
+                <NavBar mode="dark">
+                  搜索框
+                  添加
+                </NavBar>
+                <GroupItem></GroupItem>
+            </div>
         )
     }
 }
