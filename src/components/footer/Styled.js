@@ -10,6 +10,7 @@ height:60px;
 display:flex;
 background-color:#fff;
 padding:5px;
+z-index:10;
 `
 export const TabItem = Styled.div`
 flex:1;

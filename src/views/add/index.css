@@ -1,6 +1,5 @@
 .add-wrapper{
-    /* max-height: calc(100% - 270px); */
-    overflow:scroll;
+    background-color: #eee;
 }
 .switch-input.am-list-item .am-input-label.am-input-label-5{
   width:160px;

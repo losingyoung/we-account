@@ -19,6 +19,9 @@ export const addCate = params => axios.post('/api/cate_icon/add_icon', params)
 export const updateCate = params => axios.post('/api/cate_icon/update_icon', params)
 export const deleteCate = params => axios.post('/api/cate_icon/delete_icon', params)
 
+/* 完成添加 */
+export const addAccountItem = params => axios.post('/api/account/add_item', params)
+
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)

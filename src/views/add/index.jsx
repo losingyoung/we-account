@@ -9,6 +9,7 @@ import {
     InputItem,
     TextareaItem,
     Modal,
+    Toast,
     Button
 } from 'antd-mobile';
 import './index.css'
@@ -179,7 +180,7 @@ class Add extends React.Component {
             ownerSelectData: null, // dataset 可以选个人还是某个组
             memberData: null, // 所有组员信息
             curForValue: null, // 个人或某个组
-            dateValue: '',
+            dateValue: new Date(),
             userInfo: null,
             memberValue: null, //属于某个组员的
             inOutData: {
@@ -193,6 +194,8 @@ class Add extends React.Component {
                 }
             },
             inOutType: 'income',
+            price: null,
+            description: '',
             categoryInfo: [],
             activeCate: null,
             editIconMode: false,
@@ -276,6 +279,7 @@ class Add extends React.Component {
         // this.props.changeOwnerPreference({value: curForValue, type: memberData ?
         // TYPE.GROUP : TYPE.PERSONAL})
         let type = memberData ? TYPE.GROUP : TYPE.PERSONAL
+        this.type = type
         this.initCateData(type, curForValue)
         this.setState({ curForValue, memberData, memberValue: [] })
     }
@@ -290,6 +294,15 @@ class Add extends React.Component {
     // 收入 支出
     switchInOutType = (value) => {
         this.setState({ inOutType: value })
+    }
+    // 价格变化
+    changePrice = (value) => {
+      value = parseFloat(value)
+      if (value === value) {
+          this.setState({
+              price: value
+          })
+      }
     }
     // 点击某个类别
     clickCategory = (cate) => {
@@ -406,19 +419,66 @@ class Add extends React.Component {
 
         }
 
-
-
-
-
-
         this.mode = null
     }
-    // 完成编辑按钮
+    // 完成类别编辑按钮
     finishEditCateIcon = () => {
         this.setState({ editIconMode: false })
     }
     onCloseEditCateIcon = () => {
         this.setState({ showIconEditModal: false })
+    }
+    // 确认添加整个项目
+    completeAdding = () => {
+        let {dateValue, userInfo, curForValue, price, inOutType, activeCate, memberValue, memberData, description} = this.state
+        if (!curForValue) {
+            Toast.info("未选择人员哦",1.5)
+            return           
+        }
+        if (!price) {
+            Toast.info("未填写金额哦", 1.5)
+            return
+        }
+        if (!activeCate) {
+            Toast.info("未选择类别哦", 1.5)
+            return
+        }
+        let params = {
+            forType: TYPE.PERSONAL,
+            wa_code: userInfo.wa_code,
+            userName: userInfo.name,
+            itemDate: dateValue.getTime(),
+            categoryId: activeCate.get("id"),
+            categoryType: activeCate.get("type"),
+            categoryTitle: activeCate.get("title"),
+            price,
+            description
+        }
+        if (memberData) {
+            params.forType = TYPE.GROUP
+            params.group_id = curForValue
+            params.groupName = memberData.name
+            params.memberCode = memberValue[0]
+            console.log(memberData, memberValue)
+            memberData.members.some(item => {
+                if (item.wa_code === memberValue[0]) {
+                    params.memberName = item.name
+                    return true
+                }
+                return false
+            })
+        }
+
+        Service.addAccountItem(params).then(res => {
+            let data = res.data
+            if (data.success) {
+                Toast.success("添加成功", 2, () => {
+                    this.setState({
+                        price: null
+                    })
+                })
+            }
+        })
     }
     getOwnerPicker(ownerData) {
         if (ownerData) {
@@ -505,13 +565,12 @@ class Add extends React.Component {
                         type={"number"}
                         placeholder="元"
                         clear
-                        onChange={(v) => {
-                            console.log('onChange', v);
-                        }}
+                        onChange={this.changePrice}
                         onBlur={(v) => {
                             console.log('onBlur', v);
                         }}
-                        className="switch-input">
+                        className="switch-input"
+                        value={state.price}>
                         <SwitchButton
                             data={state.inOutData}
                             onSwitch={this.switchInOutType}
@@ -575,10 +634,10 @@ class Add extends React.Component {
                 <WhiteSpace size='xs' />
                 <AntList >
                     <TextareaItem // title="高度自适应"
-                        autoHeight placeholder="描述一下..." key='description' className="add-description" />
+                        autoHeight placeholder="描述一下..." key='description' value={state.description} onChange={(description) => {this.setState({description})}} className="add-description" />
                 </AntList>
                 <WhiteSpace size='lg' />
-                <Button type='primary'>添加+</Button>
+                <Button type='primary' onClick={this.completeAdding}>添加+</Button>
                 <Modal
                     visible={state.showIconEditModal}
                     transparent={true}
@@ -590,7 +649,7 @@ class Add extends React.Component {
                     onClose={this.onCloseEditCateIcon}>
                     <IconEditBox title={state.activeCate && state.activeCate.get("title")} activeCateType={state.activeCate && state.activeCate.get("type")} confirmEdit={this.confirmEditCate} mode={this.mode}></IconEditBox>
                 </Modal>
-                <WhiteSpace size='xs' />
+                <WhiteSpace size='lg' />
             </div>
         )
     }
