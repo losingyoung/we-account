@@ -114,7 +114,7 @@ class Add extends React.Component {
         // }
         this.setState({ curForValue, ownerSelectData, userInfo: user })
     }
-    componentWillUnmount(a) {
+    componentWillUnmount() {
         this._isMounted = false
     }
     getNextIconId() {
