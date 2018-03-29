@@ -1,5 +1,5 @@
 import React from 'react'
-import {NavBar, WhiteSpace} from 'antd-mobile'
+import {NavBar, WhiteSpace, Button} from 'antd-mobile'
 import GroupItem from './group-item'
 import Styled from 'styled-components'
 import PropTypes from 'prop-types';
@@ -16,15 +16,18 @@ const BtnWrapper = Styled.span`
   }
 `
 const SearchInput = Styled.input`
+  color: #333;
+  transition: 0.3s width;
   outline:none;
   height:30px;
+  width:${props => props.focus ? "6.6rem" : "5.5rem"};
   border:1px solid #eee;
   border-radius:5px;
   margin: 0 5px;
   text-indent:5px;
   background: ${props => props.focus ? "#fff" : "transparent"};
   &::-webkit-input-placeholder{
-      color:#eee;
+      color:${props => props.focus ? "" : "#eee"};
       font-size:16px;
   }
 `
@@ -34,7 +37,8 @@ class Members extends React.Component {
         super(props)
         this.state = {
             userInfo: null,
-            groupInfos: null
+            groupInfos: null,
+            focusOnSearch: false
         }
     }
     componentWillMount() {
@@ -53,16 +57,33 @@ class Members extends React.Component {
     componentWillUnmount() {
         this._isMounted = false
     }
+    handleClickSearch = () => {
+        console.log(this.searchInputRef)
+    //   this.searchInputRef.focus()
+    this.setState({
+        focusOnSearch: true
+    })
+    }
+    handleFocusSearch = () => {
+      this.setState({
+          focusOnSearch: true
+      })
+    }
+    handleBlurSearch = () => {
+        this.setState({
+            focusOnSearch: false
+        })
+    }
     render() {
-        let {userInfo, groupInfos} = this.state
+        let {userInfo, groupInfos, focusOnSearch} = this.state
         return (
             <div>
                 <NavBar mode="dark" >
-                 <BtnWrapper><i className="fa fa-search"/></BtnWrapper>
-                   <SearchInput placeholder="搜索组" />
-                 <BtnWrapper><i className="fa fa-plus-circle"/></BtnWrapper>
+                 <BtnWrapper onClick={this.handleClickSearch}><i className="fa fa-search"/></BtnWrapper>
+                   <SearchInput ref={el => {this.searchInputRef = el}} placeholder="搜索组" onFocus={this.handleFocusSearch} onBlur={this.handleBlurSearch} focus={focusOnSearch}/>
+                 {focusOnSearch ? <Button key="searchButton" size="small">搜索</Button> : <BtnWrapper><i className="fa fa-plus-circle"/></BtnWrapper>}
                 </NavBar>
-                <ItemsContainer>
+                {!focusOnSearch && <ItemsContainer>
                     {groupInfos.map(group => {
                         let {members, ...groupInfo} = group
                         return (
@@ -70,7 +91,7 @@ class Members extends React.Component {
                             </GroupItem>
                         )
                     })}
-                </ItemsContainer>                
+                </ItemsContainer>}              
             </div>
         )
     }
