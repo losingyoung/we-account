@@ -1,5 +1,5 @@
 import React from 'react'
-// import {NavBar, WhiteSpace} from 'antd-mobile'
+import {Button} from 'antd-mobile'
 import Styled from 'styled-components'
 const Blue = "#108ee9"
 
@@ -53,7 +53,7 @@ class Item extends React.Component {
     editGroupItem() {}
     delGroupItem() {}
     render() {
-        let {memberInfo, groupInfo, userInfo} = this.props
+        let {memberInfo, groupInfo, userInfo, type, clickApllyToJoin} = this.props
         return (
             <ListContainer>
                 <ImgMetaContainer>
@@ -65,6 +65,8 @@ class Item extends React.Component {
                             <MetaText>{groupInfo.ownerName}</MetaText>
                             <span><i className="fa fa-chess-queen"/></span>
                         </MetaRow>
+                        {type !=="search" && (
+                        <React.Fragment>
                         <MetaRow>成员: 
                             <MetaText>{memberInfo
                                     .filter(val => !val.owner)
@@ -78,10 +80,11 @@ class Item extends React.Component {
                         </MetaRow>
                         <MetaRow>收入 支出 预算
                         </MetaRow>
+                        </React.Fragment>)}
                     </MetaContainer>
                 </ImgMetaContainer>
                 {/* 如果是owner */}
-                {userInfo.wa_code === groupInfo.owner_wa_code && <OperationContainer >
+                {type !=="search" && userInfo.wa_code === groupInfo.owner_wa_code && <OperationContainer >
                     <OperationIconWrapper onClick={this.editGroupItem}>
                         <i className="fa fa-edit"></i>
                     </OperationIconWrapper>
@@ -89,8 +92,12 @@ class Item extends React.Component {
                         <i className="fa fa-trash-alt"></i>
                     </OperationIconWrapper>
                 </OperationContainer>}
+                {type ==="search" && (<OperationContainer>
+                    <Button type="primary" onClick={clickApllyToJoin}><span style={{padding:"0 10px", "fontSize": "16px"}}>申请加入</span></Button>
+                </OperationContainer>)}
             </ListContainer>
         )
     }
 }
+
 export default Item
