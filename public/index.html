@@ -3,8 +3,13 @@
   <head>
     <meta charset="utf-8">
      <!-- set `maximum-scale` for some compatibility issues -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui" />
     <meta name="theme-color" content="#000000">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="x5-fullscreen" content="true">
     <!--
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
@@ -52,6 +57,11 @@
         document.writeln('<script src="https://as.alipayobjects.com/g/component/es6-promise/3.2.2/es6-promise.min.js"'+'>'+'<'+'/'+'script>');
       }
     </script>
-    
+    <script type="text/javascript"> 
+      addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); 
+      function hideURLbar(){ 
+                window.scrollTo(0,1); 
+      } 
+    </script>
   </body>
 </html>

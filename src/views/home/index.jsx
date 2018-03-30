@@ -1,5 +1,7 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
+// import { TransitionGroup, CSSTransition } from "react-transition-group";
+import './index.css'
 import * as Service from '../../service'
 import Footer from '../../components/footer'
 import DashBoard from '../dashboard'
@@ -61,16 +63,22 @@ class Home extends React.Component {
     }
     render() {
         let curUrl = this.props.match.url
-        
+        let location = this.props.location
         return (
             <div>
-                <Switch>
+                {/* <TransitionGroup>
+
+                <CSSTransition key={location.key} classNames="fade" timeout={300}> */}
+                    <Switch location={location} >
                     <Route path={curUrl} component={DashBoard} exact/>
                     <Route path={curUrl + '/budget'} component={Budget} />
                     <Route path={curUrl + '/add'} component={Add} changeOwnerPreference={this.changeOwnerPreference} />
                     <Route path={curUrl + '/members'}  component={Members} />
                     <Route path={curUrl + '/me'} component={Me}  />
+                    <Route render={() => <div>Not Found</div>} />
                 </Switch>
+                {/* </CSSTransition>
+                </TransitionGroup> */}
                 <div style={{height:"70px"}} className='placeholder'/>
                 <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr}/>
             </div>
