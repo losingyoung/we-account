@@ -58,11 +58,9 @@ class Members extends React.Component {
         this._isMounted = false
     }
     handleClickSearch = () => {
-        console.log(this.searchInputRef)
-    //   this.searchInputRef.focus()
-    this.setState({
-        focusOnSearch: true
-    })
+        this.setState({
+            focusOnSearch: true
+        })
     }
     handleFocusSearch = () => {
       this.setState({
@@ -91,7 +89,7 @@ class Members extends React.Component {
                             </GroupItem>
                         )
                     })}
-                </ItemsContainer>}              
+                </ItemsContainer>}
             </div>
         )
     }
