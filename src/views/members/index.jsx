@@ -1,5 +1,5 @@
 import React from 'react'
-import {NavBar, WhiteSpace, Button} from 'antd-mobile'
+import {NavBar, WhiteSpace, Button, Toast} from 'antd-mobile'
 import GroupItem from './group-item'
 import Styled from 'styled-components'
 import PropTypes from 'prop-types';
@@ -38,7 +38,10 @@ class Members extends React.Component {
         this.state = {
             userInfo: null,
             groupInfos: null,
-            focusOnSearch: false
+            focusOnSearch: false,
+            searchValue: '',
+            searchResult: null,
+            searched: false
         }
     }
     componentWillMount() {
@@ -67,19 +70,44 @@ class Members extends React.Component {
           focusOnSearch: true
       })
     }
-    handleBlurSearch = () => {
+    changeSearchWord = (e) => {
+        e.preventDefault()
+       this.setState({
+           searchValue: e.target.value,
+           searched: false
+       })
+    }
+    handleKeyDownInput = (e) => {
+        if (e.keyCode === 13) {
+            this.setState({
+                searched: true,
+                searchResult:this.state.groupInfos[0]
+            })
+        }
+
+    }
+    cancelSearchGroup = () => {
         this.setState({
-            focusOnSearch: false
+            focusOnSearch: false,
+            searchValue: '',
+            searched: false,
+            searchResult: null
+        })
+    }
+    handleApplyToJoin = () => {
+        Toast.success("申请成功，请等待主人通过！", 2, () => {
+            this.cancelSearchGroup()
         })
     }
     render() {
-        let {userInfo, groupInfos, focusOnSearch} = this.state
+        let {userInfo, groupInfos, focusOnSearch, searchResult, searchValue, searched} = this.state
+        console.log(searchValue)
         return (
             <div>
                 <NavBar mode="dark" >
                  <BtnWrapper onClick={this.handleClickSearch}><i className="fa fa-search"/></BtnWrapper>
-                   <SearchInput ref={el => {this.searchInputRef = el}} placeholder="搜索组" onFocus={this.handleFocusSearch} onBlur={this.handleBlurSearch} focus={focusOnSearch}/>
-                 {focusOnSearch ? <Button key="searchButton" size="small">搜索</Button> : <BtnWrapper><i className="fa fa-plus-circle"/></BtnWrapper>}
+                   <SearchInput ref={el => {this.searchInputRef = el}} value={searchValue} onKeyDown={this.handleKeyDownInput} placeholder={focusOnSearch ? "输入组id搜索组" : "搜索"} onChange={this.changeSearchWord} onFocus={this.handleFocusSearch} focus={focusOnSearch}/>
+                 {focusOnSearch ? <Button key="searchButton" size="small" onClick={this.cancelSearchGroup}>取消</Button> : <BtnWrapper><i className="fa fa-plus-circle"/></BtnWrapper>}
                 </NavBar>
                 {!focusOnSearch && <ItemsContainer>
                     {groupInfos.map(group => {
@@ -90,6 +118,9 @@ class Members extends React.Component {
                         )
                     })}
                 </ItemsContainer>}
+                <WhiteSpace></WhiteSpace>
+                {focusOnSearch && searched && !searchResult&& <div>无结果</div>}
+                {focusOnSearch && searchResult  && <GroupItem type="search" key={searchResult.id} groupInfo={searchResult} userInfo={userInfo} clickApllyToJoin={this.handleApplyToJoin}></GroupItem>}
             </div>
         )
     }
