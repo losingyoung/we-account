@@ -550,7 +550,6 @@ class IconEditBox extends React.Component {
         })
     }
     confirmChange = () => {
-        console.log('ok mode:', this.props.mode)
         let { title, activeCateType } = this.state
         this.props.confirmEdit && this.props.confirmEdit({
             title,

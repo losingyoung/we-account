@@ -1,0 +1,10 @@
+.added-member-name{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    color:#666;
+    background: #fff;
+    border-radius: 5px;
+    padding:0 3px;
+}

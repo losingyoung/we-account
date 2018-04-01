@@ -23,3 +23,6 @@ html, body{
 .am-list-item.am-input-item{
   padding-right:15px;
 }
+.align-left{
+  text-align: left;
+}

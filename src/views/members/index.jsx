@@ -70,8 +70,6 @@ class Index extends React.Component {
                     </Switch>
                 </CSSTransition>
                 </TransitionGroup>
-
-
             </div>
         )
     }
@@ -197,7 +195,6 @@ class GroupLists extends React.Component {
                     clickApllyToJoin={this.handleApplyToJoin}></GroupItem>}
             </div>
         )
-
     }
 }
 Index.propTypes = {
