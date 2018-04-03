@@ -1,12 +1,20 @@
 import React from 'react'
-import { NavBar, Icon, Button, ImagePicker, WingBlank, WhiteSpace, Flex, Modal } from 'antd-mobile'
+import { NavBar, Icon, Button, ImagePicker, WingBlank, WhiteSpace, Flex, Modal, InputItem } from 'antd-mobile'
+import Styled from 'styled-components'
 
+const BudgetWrapper = Styled.div`
+.create-group-input{
+    margin: 0 15px;
+}
+`
 class CreateNewGroup extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
             files: [],
             multiple: false,
+            budget: '',
+            groupName: '',
             addedMembers: [{
                 wa_code: 333,
                 name: 'member1',
@@ -23,32 +31,72 @@ class CreateNewGroup extends React.Component {
     goBack = () => {
         this.props.history.go(-1)
     }
+    changeGroupName = (val) => {
+        this.setState({
+            groupName: val
+        })
+    }
+    changeBudget = (val) => {
+        this.setState({
+            budget: val
+        })
+    }
     changeMembers = (members) => {
-      this.setState({
-          addedMembers: members
-      })
+        this.setState({
+            addedMembers: members
+        })
+    }
+    finishCreateGroup = () => {
+        const { groupName } = this.state
+        if (!groupName) {
+            Modal.alert('', '请输入组名称')
+        }
+        this.goBack()
     }
     render() {
         let leftIcon = <Icon type="left" />
-        const { files, addedMembers } = this.state;
+        const { groupName, files, addedMembers, budget } = this.state;
         return (
-            <div >
+            <div className="create-new-group">
                 <NavBar icon={leftIcon} onLeftClick={this.goBack}>
                     <span>新建组</span>
                 </NavBar>
+
                 <WhiteSpace />
                 <WingBlank className="align-left">选择头像</WingBlank>
                 <ImagePicker
                     files={files}
                     onChange={this.onChange}
-                    onImageClick={(index, fs) => console.log(index, fs)}
                     selectable={files.length < 1}
                 />
-                <WingBlank className="align-left">人员</WingBlank>
-                  <Members onChange={this.changeMembers} members={addedMembers}></Members>
-                <WingBlank className="align-left">预算</WingBlank>
 
-                <WingBlank><Button type="primary">完成</Button></WingBlank>
+                <WingBlank className="align-left">人员</WingBlank>
+                <Members onChange={this.changeMembers} members={addedMembers}></Members>
+                <WingBlank className="align-left">名称</WingBlank>
+                <WhiteSpace />
+                <BudgetWrapper>
+                    <InputItem onChange={this.changeGroupName} value={groupName} className="create-group-input"></InputItem>
+                </BudgetWrapper>
+                <WhiteSpace />
+                <WingBlank className="align-left">预算</WingBlank>
+                <WhiteSpace />
+                {/* <AntList key='budget'> */}
+                <BudgetWrapper>
+                    <InputItem
+                        type={"number"}
+                        // placeholder="元"
+                        clear
+                        onChange={this.changeBudget}
+                        className="create-group-input"
+                        value={budget}>
+                        {/* 预算 */}
+                    </InputItem>
+                </BudgetWrapper>
+                <WhiteSpace />
+               
+                {/* </AntList> */}
+                <WhiteSpace size="lg" />
+                <WingBlank><Button type="primary" onClick={this.finishCreateGroup}>完成</Button></WingBlank>
             </div>
         )
     }
@@ -72,30 +120,24 @@ class Members extends React.Component {
         }
     }
     clickAddNew = () => {
-      this.setState({
-          showModal: true
-      })
-    }
-    addNewMember = () => {
-        const newMembers = this.props.members.concat({
-            wa_code: 333,
-            name: 'member1',
-            gender: "0",
-            avatar: "http://ourrovucw.bkt.clouddn.com/avatar_girl.jpg"
+        this.setState({
+            showModal: true
         })
-
+    }
+    addNewMember = (member) => {
+        const newMembers = this.props.members.concat(member)
         if (this.props.onChange) {
             this.props.onChange(newMembers, "add")
         }
     }
     onCloseMadal = () => {
-      this.setState({
-        showModal: false
-      })
+        this.setState({
+            showModal: false
+        })
     }
     render() {
         const { members } = this.props
-        const { showModal} = this.state
+        const { showModal } = this.state
         const addedMemberEl = members.map((member, idx) => {
             return (
                 <Flex.Item key={idx}>
@@ -137,12 +179,97 @@ class Members extends React.Component {
                     transparent={true}
                     maskTransitionName={"bounce"}
                     style={{
-                        width: "80%"
+                        width: "90%"
                     }}
                     maskClosable={true}
                     onClose={this.onCloseMadal}>
-                  <div>shuru</div>    
+                    <SearchMember onClose={this.onCloseMadal} onAddMember={this.addNewMember}></SearchMember>
                 </Modal>
+            </div>
+        )
+    }
+}
+const SearchMemberBar = Styled.div`
+display:flex;
+.am-button{
+    flex-grow:1;
+}
+`
+const AvatarContainer = Styled.div`
+  height:60px;
+  width:60px;
+  margin-right:5px;
+  img{
+      width:100%;
+  }
+`
+const ReasultItem = Styled.div`
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:8px;
+margin-top:10px;
+background:#d0d0d0;
+color:#fff;
+border-radius:3px;
+.am-button{
+    flex: 0 1 100px;
+}
+`
+class SearchMember extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            searched: false,
+            searchWord: '',
+            searchResult: null
+        }
+    }
+    handleKeyDownInput = (e) => {
+        if (e.keyCode === 13) {
+            this.setState({
+                searched: true, searchResult: {
+                    wa_code: 333,
+                    name: 'member2',
+                    gender: "0",
+                    avatar: "http://ourrovucw.bkt.clouddn.com/avatar_girl.jpg"
+                }
+            })
+        }
+    }
+    changeInput = (val) => {
+        console.log(val)
+        this.setState({
+            searched: false,
+            searchWord: val,
+            searchResult: null
+        })
+    }
+    inviteNewMember = () => {
+        this.props.onAddMember && this.props.onAddMember(this.state.searchResult)
+        this.props.onClose && this.props.onClose()
+    }
+    close = () => {
+        this.props.onClose && this.props.onClose()
+    }
+    render() {
+        const { searchResult, searchWord, searched } = this.state
+        const displayContent = searchResult ? (
+            <ReasultItem>
+                <AvatarContainer>
+                    <img src={searchResult.avatar} alt="avatar" />
+                </AvatarContainer>
+                <span>{searchResult.name}</span>
+                <Button onClick={this.inviteNewMember}>邀请加入</Button>
+            </ReasultItem>
+        ) : (searched ? <div>无结果</div> : '')
+        return (
+            <div>
+                <SearchMemberBar>
+                    <InputItem placeholder="输入we记号" onChange={this.changeInput} value={searchWord} onKeyDown={this.handleKeyDownInput}></InputItem>
+                    <Button type="primary" onClick={this.close}>取消</Button>
+                </SearchMemberBar>
+                {displayContent}
             </div>
         )
     }

@@ -3,7 +3,7 @@ import {NavBar, WhiteSpace, Button, Toast} from 'antd-mobile'
 import GroupItem from './group-item'
 import CreateNewGroup from './create-new-group'
 import Styled from 'styled-components'
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import {Route, Switch} from "react-router-dom";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
 import './index.css'
