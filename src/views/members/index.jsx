@@ -1,7 +1,8 @@
 import React from 'react'
 import {NavBar, WhiteSpace, Button, Toast} from 'antd-mobile'
 import GroupItem from './group-item'
-import CreateNewGroup from './create-new-group'
+import GroupSetting from './group-setting'
+import GroupDisplay from './group-display'
 import Styled from 'styled-components'
 // import PropTypes from 'prop-types';
 import {Route, Switch} from "react-router-dom";
@@ -26,8 +27,8 @@ const SearchInput = Styled.input `
   height:30px;
   line-height:30px;
   width:${props => props.focus
-    ? "6rem"
-    : "5.5rem"};
+    ? "225px"
+    : "205px"};
   border:1px solid #eee;
   border-radius:5px;
   margin: 0 5px;
@@ -47,7 +48,8 @@ class Index extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            prevPath: ''
+            prevPath: '',
+            curGroupInfo: {}
         }
     }
     componentWillReceiveProps(nextProps) {
@@ -55,18 +57,44 @@ class Index extends React.Component {
           this.setState({ prevPath: this.props.location })
         }
     }
+    /**
+     * 传递当前组参数
+     * @curGroupInfo {members: [], groupInfo: {}}
+     */
+    changeCurGroup = (curGroupInfo) => {
+        this.setState({
+            curGroupInfo
+        })
+    }
+    addNewGroup = (group) => {
+        console.log('finish adding',group)
+    }
+    editGroup = (group) => {
+        console.log('finish edit',group)
+    }
     render() {
         let location = this.props.location
+        const {groupInfo, members} = this.state.curGroupInfo
         let transtionName = this.state.prevPath&&this.state.prevPath.pathname !== this.props.match.path ? "slideRight" : "slideLeft"
+        let LinkedGroupLists = (props) => <GroupLists changeCurGroup={this.changeCurGroup}  {...props}/>
+        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} {...props} title="新建组"/>
+        let EditGroup = (props) => <GroupSetting finishEdit={this.editGroup} {...props} groupInfo={groupInfo} members={members} title="编辑组" />
+        let DisplayGroup = (props) => <GroupDisplay {...props} groupInfo={groupInfo} members={members} title={groupInfo && groupInfo.name}/>
         return (
             <div >
                 <TransitionGroup>
                 <CSSTransition key={location.key} classNames={transtionName} timeout={300}>
                     <Switch location={location} >
-                        <Route exact path={this.props.match.path} key='list' component={GroupLists}></Route>
+                        <Route exact path={this.props.match.path} key='list' component={LinkedGroupLists}></Route>
                         <Route
                         path={`${this.props.match.path}/create-group`}
-                        component={CreateNewGroup} key='create'></Route>
+                        component={CreateNewGroup} key='create' ></Route>
+                        <Route
+                        path={`${this.props.match.path}/edit-group`}
+                        component={EditGroup} key='edit' ></Route>
+                        <Route
+                        path={`${this.props.match.path}/display-group`}
+                        component={DisplayGroup} key='display' ></Route>
                     </Switch>
                 </CSSTransition>
                 </TransitionGroup>
@@ -74,6 +102,7 @@ class Index extends React.Component {
         )
     }
 }
+
 class GroupLists extends React.Component {
     constructor(props) {
         super(props)
@@ -86,7 +115,7 @@ class GroupLists extends React.Component {
             searched: false
         }
     }
-    componentWillMount() {
+    componentDidMount() {
         this._isMounted = true
         // ***********以后放到redux 集中管理***************
         let userInfo = (this.props.location.state && this.props.location.state.userInfo) || {}
@@ -117,7 +146,6 @@ class GroupLists extends React.Component {
         if (e.keyCode === 13) {
             this.setState({searched: true, searchResult: this.state.groupInfos[0]})
         }
-
     }
     // 取消搜索
     cancelSearchGroup = () => {
@@ -140,6 +168,28 @@ class GroupLists extends React.Component {
                 pathname: curUrl + '/create-group',
                 state
             })
+    }
+    // 编辑组
+    editGroup = (props) => {
+        this.props.changeCurGroup(props)
+        let curUrl = this.props.match.url
+        this
+            .props
+            .history
+            .push({
+                pathname: curUrl + '/edit-group'
+            }) 
+    }
+    // 查看组信息
+    displayGroupInfo = (props) => {
+        this.props.changeCurGroup(props)
+        let curUrl = this.props.match.url
+        this
+            .props
+            .history
+            .push({
+                pathname: curUrl + '/display-group'
+            }) 
     }
     render() {
         let {
@@ -172,7 +222,7 @@ class GroupLists extends React.Component {
                         </BtnWrapper>}
                 </NavBar>
                 {!focusOnSearch && <ItemsContainer>
-                    {groupInfos.map(group => {
+                    {groupInfos&&groupInfos.map(group => {
                         let {
                             members,
                             ...groupInfo
@@ -182,7 +232,10 @@ class GroupLists extends React.Component {
                                 key={groupInfo.id}
                                 groupInfo={groupInfo}
                                 memberInfo={members}
-                                userInfo={userInfo}></GroupItem>
+                                userInfo={userInfo}
+                                editGroup={() => {this.editGroup({groupInfo, members})}}
+                                displayGroupInfo = {() => {this.displayGroupInfo({groupInfo, members})}}
+                            ></GroupItem>
                         )
                     })}
                 </ItemsContainer>}

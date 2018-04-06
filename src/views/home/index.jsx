@@ -79,7 +79,7 @@ class Home extends React.Component {
                 </Switch>
                 {/* </CSSTransition>
                 </TransitionGroup> */}
-                <div style={{height:"70px"}} className='placeholder'/>
+                <div style={{height:"80px", background: "#eee"}} className='placeholder'/>
                 <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr}/>
             </div>
         )

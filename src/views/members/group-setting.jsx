@@ -7,22 +7,30 @@ const BudgetWrapper = Styled.div`
     margin: 0 15px;
 }
 `
-class CreateNewGroup extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            files: [],
-            multiple: false,
-            budget: '',
-            groupName: '',
-            addedMembers: [{
-                wa_code: 333,
-                name: 'member1',
-                gender: "0",
-                avatar: "http://ourrovucw.bkt.clouddn.com/avatar_girl.jpg"
-            }]
-        }
+class GroupSetting extends React.Component {
+    state = {
+        title: this.props.title || '组',
+        files: [],
+        multiple: false,
+        budget: (this.props.groupInfo && this.props.groupInfo.budget) || '',
+        groupName: (this.props.groupInfo && this.props.groupInfo.name) || '',
+        members: this.props.members || []
     }
+    // constructor(props) {
+    //     super(props)
+    //     this.state = {
+    //         files: [],
+    //         multiple: false,
+    //         budget: '',
+    //         groupName: '',
+    //         members: [{
+    //             wa_code: 333,
+    //             name: 'member1',
+    //             gender: "0",
+    //             avatar: "http://ourrovucw.bkt.clouddn.com/avatar_girl.jpg"
+    //         }]
+    //     }
+    // }
     onChange = (files, type, index) => {
         this.setState({
             files,
@@ -43,23 +51,30 @@ class CreateNewGroup extends React.Component {
     }
     changeMembers = (members) => {
         this.setState({
-            addedMembers: members
+            members
         })
     }
+    //  完成添加组
     finishCreateGroup = () => {
-        const { groupName } = this.state
+
+        const { groupName, members } = this.state
         if (!groupName) {
             Modal.alert('', '请输入组名称')
         }
-        this.goBack()
+        //  发请求 成功才跳回去 添加一条
+        setTimeout(() => {
+
+            this.props.finishEdit({members})
+            this.goBack()
+        },500)
     }
     render() {
         let leftIcon = <Icon type="left" />
-        const { groupName, files, addedMembers, budget } = this.state;
+        const { groupName, files, members, budget, title } = this.state;
         return (
             <div className="create-new-group">
                 <NavBar icon={leftIcon} onLeftClick={this.goBack}>
-                    <span>新建组</span>
+                    <span>{title}</span>
                 </NavBar>
 
                 <WhiteSpace />
@@ -71,7 +86,7 @@ class CreateNewGroup extends React.Component {
                 />
 
                 <WingBlank className="align-left">人员</WingBlank>
-                <Members onChange={this.changeMembers} members={addedMembers}></Members>
+                <Members onChange={this.changeMembers} members={members}></Members>
                 <WingBlank className="align-left">名称</WingBlank>
                 <WhiteSpace />
                 <BudgetWrapper>
@@ -217,13 +232,10 @@ border-radius:3px;
 }
 `
 class SearchMember extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            searched: false,
-            searchWord: '',
-            searchResult: null
-        }
+    state = {
+        searched: false,
+        searchWord: '',
+        searchResult: null
     }
     handleKeyDownInput = (e) => {
         if (e.keyCode === 13) {
@@ -274,4 +286,4 @@ class SearchMember extends React.Component {
         )
     }
 }
-export default CreateNewGroup
+export default GroupSetting

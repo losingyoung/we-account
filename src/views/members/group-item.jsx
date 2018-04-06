@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button} from 'antd-mobile'
+import {Button, Modal} from 'antd-mobile'
 import Styled from 'styled-components'
 const Blue = "#108ee9"
 
@@ -50,12 +50,31 @@ color:${Blue};
   }
 `
 class Item extends React.Component {
-    editGroupItem() {}
-    delGroupItem() {}
+    editGroupItem = (e) => {
+        e.stopPropagation()
+        // console.log(this.props)
+       this.props.editGroup()
+    }
+    displayGroupInfo = () => {
+        this.props.displayGroupInfo()
+    }
+    delGroupItem =(e) => {
+        e.stopPropagation()
+        Modal.alert("确认", "删除组将一起删除统计数据", [
+            { text: '取消'},
+            {
+              text: '确认',
+              onPress: () => {
+                  //  发请求删除组 更新store 
+              }
+                
+            }
+          ])
+    }
     render() {
         let {memberInfo, groupInfo, userInfo, type, clickApllyToJoin} = this.props
         return (
-            <ListContainer>
+            <ListContainer onClick={this.displayGroupInfo}>
                 <ImgMetaContainer>
                     <AvatarContainer>
                         <img src={groupInfo.avatar} alt="avatar"/>
@@ -99,5 +118,11 @@ class Item extends React.Component {
         )
     }
 }
+
+// class EditGroupItem extends React.Component {
+//     render() {
+
+//     }
+// }
 
 export default Item

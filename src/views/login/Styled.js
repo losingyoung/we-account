@@ -15,7 +15,7 @@ min-width:80%;
 transform: translate(-50%,-50%);
 background:#fff;
 border-radius:5px;
-padding:0.4rem 0.2rem 0.1rem 0.2rem;
+padding:15px 10px 5px 10px;
 `
 
 export const InputTable = Styled.div`
@@ -33,7 +33,7 @@ justify-content:space-between;
 export const LoginTip = Styled.div`
 width:100%;
 text-align:center;
-margin-top:0.2667rem;
+margin-top:10px;
 color:#bbb;
 `
 
@@ -41,8 +41,8 @@ export const LoginButton= Styled.div`
   width:calc(100% - 30px);
   margin:0 15px;
   border-radius:5px;
-  margin-top:0.2667rem;
-  height: 1.2rem;
+  margin-top:10px;
+  height: 45px;
   background:#ddd;
   display:flex;
   justify-content:center;

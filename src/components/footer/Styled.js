@@ -27,7 +27,7 @@ height:${buttonSize};
 export const AddButton = Styled.div`
 border-radius:100%;
 background:${props => props.active ? "#fff" : Blue};
-position:fixed;
+position:absolute;
 bottom:0;
 width:${buttonSize} 
 height:${buttonSize};
