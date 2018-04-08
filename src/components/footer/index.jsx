@@ -24,8 +24,8 @@ class Footer extends React.Component {
                     <Styled.TabTitle>统计</Styled.TabTitle>
                 </Styled.TabItem>
                 <Styled.TabItem onClick={(e) => {this.clickTab(1)}} active={this.state.activeTab === 1}>
-                    <Styled.TabIcon className='fas fa-clipboard'/>
-                    <Styled.TabTitle>预算</Styled.TabTitle>
+                    <Styled.TabIcon className='fas fa-comment'/>
+                    <Styled.TabTitle>消息</Styled.TabTitle>
                 </Styled.TabItem>
                 <Styled.AddButton onClick={(e) => {this.clickTab(2)}} active={this.state.activeTab === 2}>
                   <i className="fa fa-plus-circle" />

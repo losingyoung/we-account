@@ -15,7 +15,7 @@ class Me extends React.Component {
         this.setState({userInfo})
     }
     logout() {
-      this.props.history.replace('/')
+      this.props.history.replace('')
     }
     getGender(val) {
         return val === "0" ? "fa fa-mars" : "fa fa-venus"
