@@ -5,7 +5,7 @@ import './index.css'
 import * as Service from '../../service'
 import Footer from '../../components/footer'
 import DashBoard from '../dashboard'
-import Budget from '../budget'
+import Notifications from '../notifications'
 import Add from '../add'
 import Members from '../members'
 import Me from '../me'
@@ -18,7 +18,7 @@ class Home extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            routeArr: ['', 'budget', 'add', 'members', 'me'],
+            routeArr: ['', 'notifications', 'add', 'members', 'me'], //路径
             userInfo: {},
             groupInfos: [],
             curFor: {
@@ -71,7 +71,7 @@ class Home extends React.Component {
                 <CSSTransition key={location.key} classNames="fade" timeout={300}> */}
                     <Switch location={location} >
                     <Route path={curUrl} component={DashBoard} exact/>
-                    <Route path={curUrl + '/budget'} component={Budget} />
+                    <Route path={curUrl + '/notifications'} component={Notifications} />
                     <Route path={curUrl + '/add'} component={Add} changeOwnerPreference={this.changeOwnerPreference} />
                     <Route path={curUrl + '/members'}  component={Members} />
                     <Route path={curUrl + '/me'} component={Me}  />

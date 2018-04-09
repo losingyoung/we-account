@@ -80,13 +80,13 @@ class Item extends React.Component {
                         <img src={groupInfo.avatar} alt="avatar"/>
                     </AvatarContainer>
                     <MetaContainer>
-                        <MetaRow>主人: 
+                        <MetaRow>主人:&nbsp;
                             <MetaText>{groupInfo.ownerName}</MetaText>
                             <span><i className="fa fa-chess-queen"/></span>
                         </MetaRow>
                         {type !=="search" && (
                         <React.Fragment>
-                        <MetaRow>成员: 
+                        <MetaRow>成员:&nbsp;
                             <MetaText>{memberInfo
                                     .filter(val => !val.owner)
                                     .reduce((sum, cur, idx, arr) => {
