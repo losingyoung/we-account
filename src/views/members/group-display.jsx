@@ -1,5 +1,5 @@
 import React from 'react'
-import Styled from 'styled-components'
+// import Styled from 'styled-components'
 import { NavBar, Icon } from 'antd-mobile'
 
 class GroupDisplay extends React.Component {
@@ -7,7 +7,8 @@ class GroupDisplay extends React.Component {
         this.props.history.goBack()
     }
   render() {
-      const {groupInfo, members, title} = this.props
+      const {title} = this.props
+
       return (
           <div>
                 <NavBar icon={<Icon type="left" />} onLeftClick={this.goBack}>

@@ -18,7 +18,7 @@ class Home extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            routeArr: ['', 'notifications', 'add', 'members', 'me'], //路径
+            routeArr: ['', 'notifications', 'add', 'members', 'me'], // 路径
             userInfo: {},
             groupInfos: [],
             curFor: {
