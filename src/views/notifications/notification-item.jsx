@@ -48,23 +48,26 @@ align-items:center;
     margin-right:15px;
 }
 `
+const RequestResult =Styled.div`
+margin-right:15px;
+`
 class Item extends React.Component {
     render() {
-        const {date, description, message, request} = this.props
-        console.log(this.props)
+        const {date, description, message, request, status, refuseRequest, acceptRequest} = this.props
         return (
             <ItemContainer>
-                {/* <DateBar></DateBar> */}
                 <MainBody>
                     <MessageContainer>
                         <DateBar>{date}</DateBar>
                         <Description>{description}</Description>
                         <MessageItem>留言:&nbsp;<Message>{message}</Message></MessageItem>
                     </MessageContainer>
-                    {request && <ButtonGroup>
-                        <Button type="primary" size="small">同意</Button>
-                        <Button type="ghost" size="small">拒绝</Button>
+                    {request && status === "0" && <ButtonGroup>
+                        <Button type="primary" size="small" onClick={acceptRequest}>同意</Button>
+                        <Button type="ghost" size="small" onClick={refuseRequest}>拒绝</Button>
                     </ButtonGroup>}
+                    {request && status === "1" && <RequestResult>已同意</RequestResult>}
+                    {request && status === "2" && <RequestResult>已拒绝</RequestResult>}
                 </MainBody>
             </ItemContainer>
         )
