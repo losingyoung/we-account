@@ -24,8 +24,10 @@ export const addAccountItem = params => axios.post('/api/account/add_item', para
 
 
 export const getNotifications = params => axios.post('/api/notification/get_notifications', params)
+export const getUnreadNotifications = params => axios.post('/api/notification/get_unread_notifications', params)
 
-
+export const refuseRequest = params => axios.post('/api/notification/refuse_request', params)
+export const acceptRequest = params => axios.post('/api/notification/accept_request', params)
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)

@@ -16,7 +16,7 @@ class Footer extends React.Component {
     this.props.activeRoute(this.props.routeArr[index])
     }
     render() {
-        
+        const {unread} = this.props
         return (
             <Styled.Container>
                 <Styled.TabItem onClick={(e) => {this.clickTab(0)}} active={this.state.activeTab === 0} >
@@ -25,7 +25,10 @@ class Footer extends React.Component {
                 </Styled.TabItem>
                 <Styled.TabItem onClick={(e) => {this.clickTab(1)}} active={this.state.activeTab === 1}>
                     <Styled.TabIcon className='fas fa-comment'/>
-                    <Styled.TabTitle>消息</Styled.TabTitle>
+                    <Styled.TabTitle className="am-badge">
+                    消息
+                    {unread && <sup className="am-badge-dot"/>}
+                    </Styled.TabTitle>
                 </Styled.TabItem>
                 <Styled.AddButton onClick={(e) => {this.clickTab(2)}} active={this.state.activeTab === 2}>
                   <i className="fa fa-plus-circle" />

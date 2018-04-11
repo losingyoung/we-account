@@ -24,11 +24,12 @@ class Home extends React.Component {
             curFor: {
                 value: 777,
                 type: TYPE.PERSONAL
-            } //当前个人 / 组 偏好
+            }, //当前个人 / 组 偏好
+            hasUnreadMsg: false
         }
         this.activeRoute = this.activeRoute.bind(this)
     }
-    componentWillMount() {
+    componentDidMount() {
         if (this.props.history.replace('/', "") !== "index") {
             this.props.history.push('/index')
         }
@@ -47,6 +48,14 @@ class Home extends React.Component {
                 groupInfos: groupInfos
             })
         })
+        Service.getUnreadNotifications().then(res => {
+            let data = res.data
+            if (data.unread) {
+                this.setState({
+                    hasUnreadMsg: true
+                })
+            }
+        })
         // getUserInfo by session
         
     }
@@ -58,8 +67,12 @@ class Home extends React.Component {
     activeRoute(route) {
         let curUrl = this.props.match.url
         let state = this.state
-        console.log(state)
         this.props.history.push({pathname: curUrl + (route ? "/" + route : ""), state})
+        if (route === this.state.routeArr[1]) {
+            this.setState({
+                hasUnreadMsg: false
+            })
+        }
     }
     render() {
         let curUrl = this.props.match.url
@@ -80,7 +93,7 @@ class Home extends React.Component {
                 {/* </CSSTransition>
                 </TransitionGroup> */}
                 <div style={{height:"80px", background: "#eee"}} className='placeholder'/>
-                <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr}/>
+                <Footer  activeRoute={this.activeRoute} routeArr={this.state.routeArr} unread={this.state.hasUnreadMsg}/>
             </div>
         )
     }
