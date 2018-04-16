@@ -27,9 +27,6 @@ const TYPE = {
 }
 
 
-
-
-
 class Add extends React.Component {
     constructor(props) {
         super(props)
@@ -66,13 +63,10 @@ class Add extends React.Component {
     async componentWillMount() {
         this._isMounted = true
         let userInfo = this.props.userInfo
-        if (!userInfo) {
+        if (!userInfo || !this._isMounted) {
             return
         }
-        let groupInfos = (this.props.location.state && this.props.location.state.groupInfos) || {}
-        if (!this._isMounted) {
-            return
-        }
+        let groupInfo = this.props.groupInfo || []
         let user = {
             value: userInfo.wa_code,
             label: userInfo.name,
@@ -81,7 +75,7 @@ class Add extends React.Component {
         }
 
         let ownerSelectData = [
-            [user].concat(groupInfos.map(group => {
+            [user].concat(groupInfo.map(group => {
                 return {
                     value: group.id,
                     label: group.name,
@@ -365,11 +359,11 @@ class Add extends React.Component {
             )
         }
     }
-    getUserPciker(props) {
-        let userInfo = props.userInfo
+    getUserPciker(userInfo, curForValue) {
         if (!userInfo) {
             return null
         }
+        console.log('has userinfo')
         return (
             <Picker
                 cascade={false}
@@ -381,7 +375,7 @@ class Add extends React.Component {
                         ...userInfo
                     }]
                 ]}
-                value={[props.curForValue]}
+                value={[curForValue]}
                 disabled={true}>
                 <AntList.Item >人员</AntList.Item>
             </Picker>
@@ -402,7 +396,8 @@ class Add extends React.Component {
         let state = this.state
         let leftIcon = '' // <Icon type="left" />
         let ownerData = state.ownerSelectData
-        let memberData = state.memberData
+        const {memberData, curForValue} = this.state
+        const {userInfo} = this.props
         const screenWidth = (document.documentElement && document.documentElement.clientWidth) || window.innerWidth
         const oneLineCount = screenWidth < 375
             ? 5
@@ -432,7 +427,7 @@ class Add extends React.Component {
                             }),
                         changeMemberValue: this.changeMemberValue
                     })
-                    : this.getUserPciker(state)}
+                    : this.getUserPciker(userInfo, curForValue)}
                 <WhiteSpace size='xs' />
                 <AntList key='price'>
                     <InputItem
@@ -531,7 +526,8 @@ class Add extends React.Component {
 const mapStateToProps = state => {
     return {
         curFor: state.groupPreference,
-        userInfo: state.userInfo
+        userInfo: state.userInfo,
+        groupInfo: state.groupInfo
     }
 }
 const mapDispatchToProps = dispatch => ({

@@ -2,6 +2,7 @@ import React from 'react'
 import {Route, Switch} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {setUserInfo} from '../../store/actions/userInfo'
+import {setGroupInfo} from '../../store/actions/groupInfo'
 import './index.css'
 import * as Service from '../../service'
 import Footer from '../../components/footer'
@@ -46,6 +47,7 @@ class Home extends React.Component {
         Service.getGroups().then(res => {
             console.log('groupinfo', res.data)
             let {groupInfos} = res.data
+            this.props.saveGroupInfo(groupInfos)
             this.setState({
                 groupInfos: groupInfos
             })
@@ -104,6 +106,9 @@ const mapDispatchToProps = dispatch => {
     return {
         saveUserInfo(info) {
             dispatch(setUserInfo(info))
+        },
+        saveGroupInfo(info) {
+            dispatch(setGroupInfo(info))
         }
     }
 }
