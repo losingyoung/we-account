@@ -1,6 +1,7 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
-// import { TransitionGroup, CSSTransition } from "react-transition-group";
+import {connect} from 'react-redux'
+import {setUserInfo} from '../../store/actions/userInfo'
 import './index.css'
 import * as Service from '../../service'
 import Footer from '../../components/footer'
@@ -37,6 +38,7 @@ class Home extends React.Component {
         Service.getUserInfo().then(res => {
             console.log('userinfo', res.data.userInfo)
             let data = res.data
+            this.props.saveUserInfo(data.userInfo)
             this.setState({
                 userInfo: data.userInfo
             })
@@ -98,5 +100,11 @@ class Home extends React.Component {
         )
     }
 }
-
-export default Home
+const mapDispatchToProps = dispatch => {
+    return {
+        saveUserInfo(info) {
+            dispatch(setUserInfo(info))
+        }
+    }
+}
+export default connect(null, mapDispatchToProps)(Home)

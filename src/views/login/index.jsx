@@ -18,7 +18,6 @@ class Login extends React.Component {
         Toast.info('正在紧张建设中-.-', 1.5)
     }
     render() {
-        console.log(this.props)
         return (
             <Styled.LoginWrapper>
                 <Styled.LoginContainer>

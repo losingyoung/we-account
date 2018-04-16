@@ -1,5 +1,7 @@
 import React from 'react'
 import { Map, fromJS } from 'immutable'
+import {connect} from 'react-redux'
+import {setGroupPreference} from '../../store/actions/groupPreference'
 import {
     DatePicker,
     Picker,
@@ -17,28 +19,15 @@ import SwitchButton from '../../components/switch-button'
 import ICONS from './icon'
 import * as Styled from './Styled'
 import * as Service from '../../service'
+import IconEditBox from './children/icon-edit-box'
+import Title from './children/title'
 const TYPE = {
     PERSONAL: "0",
     GROUP: "1"
 }
 
 
-function Title(props) {
-    return (
-        <div
-            onClick={props.onClick}
-            style={{
-                padding: "5px 15px",
-                display: "flex",
-                "alignItems": "center"
-            }}>
-            <div style={{
-                "marginRight": "5px"
-            }}>{props.extra}</div>
-            {props.children}
-        </div>
-    )
-}
+
 
 
 class Add extends React.Component {
@@ -54,7 +43,6 @@ class Add extends React.Component {
             memberData: null, // 所有组员信息
             curForValue: null, // 个人或某个组
             dateValue: new Date(),
-            userInfo: null,
             memberValue: null, //属于某个组员的
             inOutData: {
                 left: {
@@ -77,7 +65,10 @@ class Add extends React.Component {
     }
     async componentWillMount() {
         this._isMounted = true
-        let userInfo = (this.props.location.state && this.props.location.state.userInfo) || {}
+        let userInfo = this.props.userInfo
+        if (!userInfo) {
+            return
+        }
         let groupInfos = (this.props.location.state && this.props.location.state.groupInfos) || {}
         if (!this._isMounted) {
             return
@@ -112,7 +103,7 @@ class Add extends React.Component {
         // } else {
         //     cateIcons = await Service.getGroupIcons({group_id: curForValue})
         // }
-        this.setState({ curForValue, ownerSelectData, userInfo: user })
+        this.setState({ curForValue, ownerSelectData})
     }
     componentWillUnmount() {
         this._isMounted = false
@@ -193,7 +184,8 @@ class Add extends React.Component {
     //delete cate icon
     DelIcon = (e, cate) => {
         e.stopPropagation()
-        const { memberData, userInfo, curForValue, categoryInfo } = this.state
+        const {userInfo} = this.props
+        const { memberData, curForValue, categoryInfo } = this.state
         let params = {
             forType: TYPE.PERSONAL,
             wa_code: userInfo.wa_code,
@@ -233,7 +225,8 @@ class Add extends React.Component {
     // 窗口编辑的完成按钮
     confirmEditCate = ({ title, activeCateType }) => {
         console.log('confirm', this.state.activeCate, title, activeCateType)
-        const { memberData, userInfo, curForValue, categoryInfo } = this.state
+        const {userInfo} = this.props
+        const { memberData, curForValue, categoryInfo } = this.state
 
         
         let params = {
@@ -303,7 +296,8 @@ class Add extends React.Component {
     }
     // 确认添加整个项目
     completeAdding = () => {
-        let {dateValue, userInfo, curForValue, price, inOutType, activeCate, memberValue, memberData, description} = this.state
+        let {dateValue, curForValue, price, inOutType, activeCate, memberValue, memberData, description} = this.state
+        const {userInfo} = this.props
         if (!curForValue) {
             Toast.info("未选择人员哦",1.5)
             return           
@@ -333,7 +327,6 @@ class Add extends React.Component {
             params.group_id = curForValue
             params.groupName = memberData.name
             params.memberCode = memberValue[0]
-            console.log(memberData, memberValue)
             memberData.members.some(item => {
                 if (item.wa_code === memberValue[0]) {
                     params.memberName = item.name
@@ -373,14 +366,20 @@ class Add extends React.Component {
         }
     }
     getUserPciker(props) {
-        if (!props.userInfo) {
+        let userInfo = props.userInfo
+        if (!userInfo) {
             return null
         }
         return (
             <Picker
                 cascade={false}
                 data={[
-                    [props.userInfo]
+                    [{
+                        value: userInfo.wa_code,
+                        label: userInfo.name,
+                        type: TYPE.PERSONAL,
+                        ...userInfo
+                    }]
                 ]}
                 value={[props.curForValue]}
                 disabled={true}>
@@ -419,7 +418,8 @@ class Add extends React.Component {
                 <DatePicker mode="date" value={state.dateValue} onOk={this.changeDate}>
                     <AntList.Item arrow="horizontal">日期</AntList.Item>
                 </DatePicker>
-                <WhiteSpace size='xs' /> {memberData
+                <WhiteSpace size='xs' /> 
+                  {memberData
                     ? this.getGroupUserPciker({
                         ...state,
                         memberData: memberData
@@ -521,85 +521,22 @@ class Add extends React.Component {
                     }}
                     maskClosable={true}
                     onClose={this.onCloseEditCateIcon}>
-                    <IconEditBox title={state.activeCate && state.activeCate.get("title")} activeCateType={state.activeCate && state.activeCate.get("type")} confirmEdit={this.confirmEditCate} mode={this.mode}></IconEditBox>
+                    <IconEditBox icons={ICONS} title={state.activeCate && state.activeCate.get("title")} activeCateType={state.activeCate && state.activeCate.get("type")} confirmEdit={this.confirmEditCate} mode={this.mode}></IconEditBox>
                 </Modal>
                 <WhiteSpace size='lg' />
             </div>
         )
     }
 }
-// 弹出来的分类按钮编辑框
-class IconEditBox extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            title: props.title || "",
-            activeCateType: props.activeCateType,
-            iconWidth: 0
-        }
+const mapStateToProps = state => {
+    return {
+        curFor: state.groupPreference,
+        userInfo: state.userInfo
     }
-    setActiveIcon = (type) => {
-        this.setState({
-            activeCateType: type
-        })
-    }
-    changeCateTitle = (e) => {
-        e.preventDefault()
-        this.setState({
-            title: e.target.value
-        })
-    }
-    confirmChange = () => {
-        let { title, activeCateType } = this.state
-        this.props.confirmEdit && this.props.confirmEdit({
-            title,
-            activeCateType
-        })
-    }
-    componentDidMount() {
-        // const el = document.querySelector('.icon-edit-wrapper')
-        const clientWidth = this.boxBody.clientWidth
-        const oneLineCount = 5
-        const iconWidth = (clientWidth - 14) / oneLineCount - 20
-        this.setState({
-            iconWidth
-        })
-    }
-    render() {
-        let { activeCateType, title, iconWidth } = this.state
-
-        return (
-            <div className="icon-edit-wrapper" ref={el => this.boxBody = el}>
-                <div className="title-container">
-                    <input value={title} onChange={this.changeCateTitle} />
-                </div>
-                <div className="operation-buttons">
-                    <span onClick={this.confirmChange}><i className='fa fa-check' /></span>
-                    {/* <span><i className='fa fa-times-circle'/></span> */}
-                </div>
-                <div className="icons-container">
-                    <Styled.CategoryArea iconWidth={iconWidth}>
-                        {Object.keys(ICONS)
-                            .map(type => {
-                                return (
-                                    <div
-                                        key={type}
-                                        className={`cate-item-wrapper ${type === activeCateType
-                                            ? "active"
-                                            : ""}`}
-                                        onClick={() => {
-                                            this.setActiveIcon(type)
-                                        }}>
-                                        <img className="icon-img" src={ICONS[type]} alt={type} />
-                                    </div>
-                                )
-                            })}
-                    </Styled.CategoryArea>
-                </div>
-            </div>
-        )
-    }
-
 }
-
-export default Add
+const mapDispatchToProps = dispatch => ({
+    onChangeCurFor(curFor) {
+        dispatch(setGroupPreference(curFor))
+    }
+})
+export default connect(mapStateToProps, mapDispatchToProps)(Add)
