@@ -56,7 +56,8 @@ class Item extends React.Component {
        this.props.editGroup()
     }
     displayGroupInfo = () => {
-        this.props.displayGroupInfo()
+        //展示具体信息
+        // this.props.displayGroupInfo()
     }
     delGroupItem =(e) => {
         e.stopPropagation()

@@ -21,10 +21,7 @@ import * as Styled from './Styled'
 import * as Service from '../../service'
 import IconEditBox from './children/icon-edit-box'
 import Title from './children/title'
-const TYPE = {
-    PERSONAL: "0",
-    GROUP: "1"
-}
+import TYPE from '../../constants/constants'
 
 
 class Add extends React.Component {
@@ -32,13 +29,9 @@ class Add extends React.Component {
         super(props)
         this.mode = null
         this.nextIconId = null
-        this.goBack = this
-            .goBack
-            .bind(this)
         this.state = {
             ownerSelectData: null, // dataset 可以选个人还是某个组
             memberData: null, // 所有组员信息
-            curForValue: null, // 个人或某个组
             dateValue: new Date(),
             memberValue: null, //属于某个组员的
             inOutData: {
@@ -66,6 +59,18 @@ class Add extends React.Component {
         if (!userInfo || !this._isMounted) {
             return
         }
+
+        let curForValue = userInfo.wa_code
+        let type = TYPE.PERSONAL
+        if (this.props.curFor && this.props.curFor.value) {
+            curForValue = this.props.curFor.value
+            type = this.props.curFor.type
+        } else {
+            this.props.onChangeCurFor({
+                value:curForValue,
+                type
+            })
+        }
         let groupInfo = this.props.groupInfo || []
         let user = {
             value: userInfo.wa_code,
@@ -73,7 +78,6 @@ class Add extends React.Component {
             type: TYPE.PERSONAL,
             ...userInfo
         }
-
         let ownerSelectData = [
             [user].concat(groupInfo.map(group => {
                 return {
@@ -84,20 +88,8 @@ class Add extends React.Component {
                 }
             }))
         ]
-        let curForValue = userInfo.wa_code
-        let type = TYPE.PERSONAL
-        if (this.props.location.state && this.props.location.state.curFor && this.props.location.state.curFor.value) {
-            curForValue = this.props.location.state.curFor.value
-            type = this.props.location.state.curFor.type
-        }
-        this.initCateData(type, curForValue)
-        // let cateIcons;
-        // if (type === TYPE.PERSONAL) {
-        //     cateIcons = await Service.getPersonalIcons({wa_code: curForValue})
-        // } else {
-        //     cateIcons = await Service.getGroupIcons({group_id: curForValue})
-        // }
-        this.setState({ curForValue, ownerSelectData})
+        this.setState({ownerSelectData})
+        this.setOwnerPickerData([curForValue], ownerSelectData[0])
     }
     componentWillUnmount() {
         this._isMounted = false
@@ -105,7 +97,7 @@ class Add extends React.Component {
     getNextIconId() {
         return this.nextIconId
     }
-    goBack() {
+    goBack =()=> {
         // console.log('back')
     }
     async initCateData(type, curForValue) {
@@ -120,11 +112,10 @@ class Add extends React.Component {
         this.setState({ categoryInfo: fromJS(data.icons), activeCate: null, editIconMode: false })
     }
     // 为谁加
-    setOwnerPickerData = ([curForValue]) => {
+    setOwnerPickerData = ([curForValue], ownerSelectData) => {
         let memberData = null
-        this
-            .state
-            .ownerSelectData[0]
+        const ownerData = this.state.ownerSelectData ? this.state.ownerSelectData[0] : ownerSelectData
+        ownerData
             .some(owner => {
                 if (owner.value === curForValue) {
                     if (owner.type === TYPE.GROUP) {
@@ -134,12 +125,13 @@ class Add extends React.Component {
                 }
                 return false
             })
-        // this.props.changeOwnerPreference({value: curForValue, type: memberData ?
-        // TYPE.GROUP : TYPE.PERSONAL})
         let type = memberData ? TYPE.GROUP : TYPE.PERSONAL
-        this.type = type
+        this.props.onChangeCurFor({
+            value:curForValue,
+            type
+        })
         this.initCateData(type, curForValue)
-        this.setState({ curForValue, memberData, memberValue: [] })
+        this.setState({ memberData, memberValue: [] })
     }
     // 更改日期
     changeDate = (value) => {
@@ -178,15 +170,15 @@ class Add extends React.Component {
     //delete cate icon
     DelIcon = (e, cate) => {
         e.stopPropagation()
-        const {userInfo} = this.props
-        const { memberData, curForValue, categoryInfo } = this.state
+        const {userInfo, curFor} = this.props
+        const { memberData, categoryInfo } = this.state
+        const curForValue = curFor.value
         let params = {
-            forType: TYPE.PERSONAL,
+            forType: curFor.type,
             wa_code: userInfo.wa_code,
             ...(cate.toJS())
         }
         if (memberData) {
-            params.forType = TYPE.GROUP
             params.group_id = curForValue
         }
 
@@ -219,16 +211,15 @@ class Add extends React.Component {
     // 窗口编辑的完成按钮
     confirmEditCate = ({ title, activeCateType }) => {
         console.log('confirm', this.state.activeCate, title, activeCateType)
-        const {userInfo} = this.props
-        const { memberData, curForValue, categoryInfo } = this.state
-
+        const {userInfo, curFor} = this.props
+        const { memberData, categoryInfo } = this.state
+        const curForValue = curFor.value
         
         let params = {
-            forType: TYPE.PERSONAL,
+            forType: curFor.type,
             wa_code: userInfo.wa_code
         }
         if (memberData) {
-            params.forType = TYPE.GROUP
             params.group_id = curForValue
         }
         if (this.mode === 'update') {
@@ -290,9 +281,9 @@ class Add extends React.Component {
     }
     // 确认添加整个项目
     completeAdding = () => {
-        let {dateValue, curForValue, price, inOutType, activeCate, memberValue, memberData, description} = this.state
-        const {userInfo} = this.props
-        if (!curForValue) {
+        let {dateValue, price, inOutType, activeCate, memberValue, memberData, description} = this.state
+        const {userInfo, curFor} = this.props
+        if (!memberValue) {
             Toast.info("未选择人员哦",1.5)
             return           
         }
@@ -305,7 +296,7 @@ class Add extends React.Component {
             return
         }
         let params = {
-            forType: TYPE.PERSONAL,
+            forType: curFor.type,
             wa_code: userInfo.wa_code,
             userName: userInfo.name,
             itemDate: dateValue.getTime(),
@@ -317,8 +308,7 @@ class Add extends React.Component {
             description
         }
         if (memberData) {
-            params.forType = TYPE.GROUP
-            params.group_id = curForValue
+            params.group_id = curFor.value
             params.groupName = memberData.name
             params.memberCode = memberValue[0]
             memberData.members.some(item => {
@@ -343,9 +333,10 @@ class Add extends React.Component {
     }
     getOwnerPicker(ownerData) {
         if (ownerData) {
+            console.log('oo', ownerData)
             return (
                 <Picker cascade={false} data={ownerData} onOk={this.setOwnerPickerData}
-                    onDismiss={e => { console.log('dismiss', e) }} value={[this.state.curForValue]}>
+                    onDismiss={e => { console.log('dismiss', e) }} value={this.props.curFor&&this.props.curFor.value ? [this.props.curFor.value]:[]}>
                     <Title>
                         <span className='fa fa-angle-down'></span>
                     </Title>
@@ -363,7 +354,7 @@ class Add extends React.Component {
         if (!userInfo) {
             return null
         }
-        console.log('has userinfo')
+        console.log('user',curForValue)
         return (
             <Picker
                 cascade={false}
@@ -375,13 +366,14 @@ class Add extends React.Component {
                         ...userInfo
                     }]
                 ]}
-                value={[curForValue]}
+                value={[userInfo.wa_code]}
                 disabled={true}>
                 <AntList.Item >人员</AntList.Item>
             </Picker>
         )
     }
     getGroupUserPciker(props) {
+        console.log('group picker', props)
         return (
             <Picker
                 cascade={false}
@@ -396,8 +388,8 @@ class Add extends React.Component {
         let state = this.state
         let leftIcon = '' // <Icon type="left" />
         let ownerData = state.ownerSelectData
-        const {memberData, curForValue} = this.state
-        const {userInfo} = this.props
+        const {memberData} = this.state
+        const {userInfo, curFor} = this.props
         const screenWidth = (document.documentElement && document.documentElement.clientWidth) || window.innerWidth
         const oneLineCount = screenWidth < 375
             ? 5
@@ -427,7 +419,7 @@ class Add extends React.Component {
                             }),
                         changeMemberValue: this.changeMemberValue
                     })
-                    : this.getUserPciker(userInfo, curForValue)}
+                    : this.getUserPciker(userInfo, curFor &&curFor.value)}
                 <WhiteSpace size='xs' />
                 <AntList key='price'>
                     <InputItem

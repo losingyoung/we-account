@@ -11,10 +11,7 @@ import Notifications from '../notifications'
 import Add from '../add'
 import Members from '../members'
 import Me from '../me'
-const TYPE = {
-    PERSONAL: "0",
-    GROUP: "1"
-}
+import TYPE from '../../constants/constants'
 
 class Home extends React.Component {
     constructor(props) {
@@ -23,10 +20,6 @@ class Home extends React.Component {
             routeArr: ['', 'notifications', 'add', 'members', 'me'], // 路径
             userInfo: {},
             groupInfos: [],
-            curFor: {
-                value: 777,
-                type: TYPE.PERSONAL
-            }, //当前个人 / 组 偏好
             hasUnreadMsg: false
         }
         this.activeRoute = this.activeRoute.bind(this)
@@ -63,11 +56,6 @@ class Home extends React.Component {
         // getUserInfo by session
         
     }
-    changeOwnerPreference = (val) => {
-        this.setState({
-            curFor: val
-        })
-    }
     activeRoute(route) {
         let curUrl = this.props.match.url
         let state = this.state
@@ -89,7 +77,7 @@ class Home extends React.Component {
                     <Switch location={location} >
                     <Route path={curUrl} component={DashBoard} exact/>
                     <Route path={curUrl + '/notifications'} component={Notifications} />
-                    <Route path={curUrl + '/add'} component={Add} changeOwnerPreference={this.changeOwnerPreference} />
+                    <Route path={curUrl + '/add'} component={Add} />
                     <Route path={curUrl + '/members'}  component={Members} />
                     <Route path={curUrl + '/me'} component={Me}  />
                     <Route render={() => <div>Not Found</div>} />

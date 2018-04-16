@@ -1,12 +1,13 @@
 import React from 'react'
 import {NavBar, WhiteSpace, Button, Toast} from 'antd-mobile'
-import GroupItem from './group-item'
-import GroupSetting from './group-setting'
-import GroupDisplay from './group-display'
+import GroupItem from './children/group-item'
+import GroupSetting from './children/group-setting'
+import GroupDisplay from './children/group-display'
 import Styled from 'styled-components'
 // import PropTypes from 'prop-types';
 import {Route, Switch} from "react-router-dom";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
+import { connect } from 'react-redux'
 import './index.css'
 
 const ItemsContainer = Styled.div `
@@ -44,71 +45,12 @@ const SearchInput = Styled.input `
   }
 `
 
-class Index extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            prevPath: '',
-            curGroupInfo: {}
-        }
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.location !== this.props.location) {
-          this.setState({ prevPath: this.props.location })
-        }
-    }
-    /**
-     * 传递当前组参数
-     * @curGroupInfo {members: [], groupInfo: {}}
-     */
-    changeCurGroup = (curGroupInfo) => {
-        this.setState({
-            curGroupInfo
-        })
-    }
-    addNewGroup = (group) => {
-        console.log('finish adding',group)
-    }
-    editGroup = (group) => {
-        console.log('finish edit',group)
-    }
-    render() {
-        let location = this.props.location
-        const {groupInfo, members} = this.state.curGroupInfo
-        let transtionName = this.state.prevPath&&this.state.prevPath.pathname !== this.props.match.path ? "slideRight" : "slideLeft"
-        let LinkedGroupLists = (props) => <GroupLists changeCurGroup={this.changeCurGroup}  {...props}/>
-        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} {...props} title="新建组"/>
-        let EditGroup = (props) => <GroupSetting finishEdit={this.editGroup} {...props} groupInfo={groupInfo} members={members} title="编辑组" />
-        let DisplayGroup = (props) => <GroupDisplay {...props} groupInfo={groupInfo} members={members} title={groupInfo && groupInfo.name}/>
-        return (
-            <div >
-                <TransitionGroup>
-                <CSSTransition key={location.key} classNames={transtionName} timeout={300}>
-                    <Switch location={location} >
-                        <Route exact path={this.props.match.path} key='list' component={LinkedGroupLists}></Route>
-                        <Route
-                        path={`${this.props.match.path}/create-group`}
-                        component={CreateNewGroup} key='create' ></Route>
-                        <Route
-                        path={`${this.props.match.path}/edit-group`}
-                        component={EditGroup} key='edit' ></Route>
-                        <Route
-                        path={`${this.props.match.path}/display-group`}
-                        component={DisplayGroup} key='display' ></Route>
-                    </Switch>
-                </CSSTransition>
-                </TransitionGroup>
-            </div>
-        )
-    }
-}
+
 
 class GroupLists extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            userInfo: null,
-            groupInfos: null,
             focusOnSearch: false,
             searchValue: '',
             searchResult: null,
@@ -117,13 +59,9 @@ class GroupLists extends React.Component {
     }
     componentDidMount() {
         this._isMounted = true
-        // ***********以后放到redux 集中管理***************
-        let userInfo = (this.props.location.state && this.props.location.state.userInfo) || {}
-        let groupInfos = (this.props.location.state && this.props.location.state.groupInfos) || {}
         if (!this._isMounted) {
             return
         }
-        this.setState({userInfo, groupInfos})
     }
     componentWillUnmount() {
         this._isMounted = false
@@ -144,7 +82,7 @@ class GroupLists extends React.Component {
     // 键盘 确定
     handleKeyDownInput = (e) => {
         if (e.keyCode === 13) {
-            this.setState({searched: true, searchResult: this.state.groupInfos[0]})
+            this.setState({searched: true, searchResult: this.props.groupInfo[0]})
         }
     }
     // 取消搜索
@@ -192,9 +130,8 @@ class GroupLists extends React.Component {
             }) 
     }
     render() {
+        const {userInfo, groupInfo} = this.props
         let {
-            userInfo,
-            groupInfos,
             focusOnSearch,
             searchResult,
             searchValue,
@@ -222,19 +159,19 @@ class GroupLists extends React.Component {
                         </BtnWrapper>}
                 </NavBar>
                 {!focusOnSearch && <ItemsContainer>
-                    {groupInfos&&groupInfos.map(group => {
+                    {groupInfo&&groupInfo.map(group => {
                         let {
                             members,
-                            ...groupInfo
+                            ...groupOwnData
                         } = group
                         return (
                             <GroupItem
-                                key={groupInfo.id}
-                                groupInfo={groupInfo}
+                                key={groupOwnData.id}
+                                groupInfo={groupOwnData}
                                 memberInfo={members}
                                 userInfo={userInfo}
-                                editGroup={() => {this.editGroup({groupInfo, members})}}
-                                displayGroupInfo = {() => {this.displayGroupInfo({groupInfo, members})}}
+                                editGroup={() => {this.editGroup({groupOwnData, members})}}
+                                displayGroupInfo = {() => {this.displayGroupInfo({groupOwnData, members})}}
                             ></GroupItem>
                         )
                     })}
@@ -250,7 +187,69 @@ class GroupLists extends React.Component {
         )
     }
 }
-Index.propTypes = {
-    // userInfo:
+const mapStateToProps = state => {
+    return {
+        userInfo: state.userInfo,
+        groupInfo: state.groupInfo
+    }
+}
+const GroupListsContainer = connect(mapStateToProps)(GroupLists)
+class Index extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            prevPath: '',
+            curGroupInfo: {}
+        }
+    }
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.location !== this.props.location) {
+          this.setState({ prevPath: this.props.location })
+        }
+    }
+    /**
+     * 传递当前组参数
+     * @curGroupInfo {members: [], groupInfo: {}}
+     */
+    changeCurGroup = (curGroupInfo) => {
+        this.setState({
+            curGroupInfo
+        })
+    }
+    addNewGroup = (group) => {
+        console.log('finish adding',group)
+    }
+    editGroup = (group) => {
+        console.log('finish edit',group)
+    }
+    render() {
+        let location = this.props.location
+        const {groupInfo, members} = this.state.curGroupInfo
+        let transtionName = this.state.prevPath&&this.state.prevPath.pathname !== this.props.match.path ? "slideRight" : "slideLeft"
+        let LinkedGroupLists = (props) => <GroupListsContainer changeCurGroup={this.changeCurGroup}  {...props}/>
+        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} {...props} title="新建组"/>
+        let EditGroup = (props) => <GroupSetting finishEdit={this.editGroup} {...props} groupInfo={groupInfo} members={members} title="编辑组" />
+        let DisplayGroup = (props) => <GroupDisplay {...props} groupInfo={groupInfo} members={members} title={groupInfo && groupInfo.name}/>
+        return (
+            <div >
+                <TransitionGroup>
+                <CSSTransition key={location.key} classNames={transtionName} timeout={300}>
+                    <Switch location={location} >
+                        <Route exact path={this.props.match.path} key='list' component={LinkedGroupLists}></Route>
+                        <Route
+                        path={`${this.props.match.path}/create-group`}
+                        component={CreateNewGroup} key='create' ></Route>
+                        <Route
+                        path={`${this.props.match.path}/edit-group`}
+                        component={EditGroup} key='edit' ></Route>
+                        <Route
+                        path={`${this.props.match.path}/display-group`}
+                        component={DisplayGroup} key='display' ></Route>
+                    </Switch>
+                </CSSTransition>
+                </TransitionGroup>
+            </div>
+        )
+    }
 }
 export default Index
