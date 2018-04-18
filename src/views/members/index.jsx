@@ -213,7 +213,7 @@ class Index extends React.Component {
     addNewGroup = (group) => {
         const userInfo = this.props.userInfo
         console.log('finish adding', group)
-        group.members = [{...userInfo, owner: true}].concat(group.members)
+        // group.members = [{...userInfo, owner: true}].concat(group.members)
         let param = {
             ownerName: userInfo.name,
             owner_wa_code: userInfo.wa_code,
@@ -285,17 +285,19 @@ class Index extends React.Component {
             {...props}
             userInfo={userInfo}
             groupInfo={groupInfo}/>
-        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} goBackAfterFinish={true} {...props} title="新建组"/>
+        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} goBackAfterFinish={true} {...props} userInfo = {userInfo} title="新建组"/>
         let EditGroup = (props) => <GroupSetting
             finishEdit={this.editGroup}
             {...props}
             curGroupInfo={groupOwnData}
             members={members}
+            userInfo = {userInfo}
             title="编辑组"/>
         let DisplayGroup = (props) => <GroupDisplay
             {...props}
             curGroupInfo={groupOwnData}
             members={members}
+            
             title={groupOwnData && groupOwnData.groupName}/>
         return (
             <div >
