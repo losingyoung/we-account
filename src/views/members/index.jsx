@@ -4,10 +4,12 @@ import GroupItem from './children/group-item'
 import GroupSetting from './children/group-setting'
 import GroupDisplay from './children/group-display'
 import Styled from 'styled-components'
+import {createGroup, editGroup} from "../../store/actions/groupInfo";
 // import PropTypes from 'prop-types';
+import * as Services from "../../service";
 import {Route, Switch} from "react-router-dom";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import './index.css'
 
 const ItemsContainer = Styled.div `
@@ -44,8 +46,6 @@ const SearchInput = Styled.input `
       font-size:16px;
   }
 `
-
-
 
 class GroupLists extends React.Component {
     constructor(props) {
@@ -109,34 +109,34 @@ class GroupLists extends React.Component {
     }
     // 编辑组
     editGroup = (props) => {
-        this.props.changeCurGroup(props)
+        this
+            .props
+            .changeCurGroup(props)
+        // console.log(props)
         let curUrl = this.props.match.url
         this
             .props
             .history
             .push({
                 pathname: curUrl + '/edit-group'
-            }) 
+            })
     }
     // 查看组信息
     displayGroupInfo = (props) => {
-        this.props.changeCurGroup(props)
+        this
+            .props
+            .changeCurGroup(props)
         let curUrl = this.props.match.url
         this
             .props
             .history
             .push({
                 pathname: curUrl + '/display-group'
-            }) 
+            })
     }
     render() {
         const {userInfo, groupInfo} = this.props
-        let {
-            focusOnSearch,
-            searchResult,
-            searchValue,
-            searched
-        } = this.state
+        let {focusOnSearch, searchResult, searchValue, searched} = this.state
         return (
             <div className="members-wrapper">
                 <NavBar mode="dark">
@@ -159,27 +159,29 @@ class GroupLists extends React.Component {
                         </BtnWrapper>}
                 </NavBar>
                 {!focusOnSearch && <ItemsContainer>
-                    {groupInfo&&groupInfo.map(group => {
+                    {groupInfo && groupInfo.map(group => {
                         let {
                             members,
                             ...groupOwnData
                         } = group
                         return (
                             <GroupItem
-                                key={groupOwnData.id}
+                                key={groupOwnData.group_id}
                                 groupInfo={groupOwnData}
                                 memberInfo={members}
                                 userInfo={userInfo}
-                                editGroup={() => {this.editGroup({groupOwnData, members})}}
-                                displayGroupInfo = {() => {this.displayGroupInfo({groupOwnData, members})}}
-                            ></GroupItem>
+                                editGroup={() => {
+                                this.editGroup(groupOwnData)
+                            }}
+                                displayGroupInfo=
+                                {() => {this.displayGroupInfo(groupOwnData)}}></GroupItem>
                         )
                     })}
                 </ItemsContainer>}
                 <WhiteSpace/> {focusOnSearch && searched && !searchResult && <div>无结果</div>}
                 {focusOnSearch && searchResult && <GroupItem
                     type="search"
-                    key={searchResult.id}
+                    key={searchResult.group_id}
                     groupInfo={searchResult}
                     userInfo={userInfo}
                     clickApllyToJoin={this.handleApplyToJoin}></GroupItem>}
@@ -187,13 +189,7 @@ class GroupLists extends React.Component {
         )
     }
 }
-const mapStateToProps = state => {
-    return {
-        userInfo: state.userInfo,
-        groupInfo: state.groupInfo
-    }
-}
-const GroupListsContainer = connect(mapStateToProps)(GroupLists)
+
 class Index extends React.Component {
     constructor(props) {
         super(props)
@@ -204,7 +200,7 @@ class Index extends React.Component {
     }
     componentWillReceiveProps(nextProps) {
         if (nextProps.location !== this.props.location) {
-          this.setState({ prevPath: this.props.location })
+            this.setState({prevPath: this.props.location})
         }
     }
     /**
@@ -212,44 +208,136 @@ class Index extends React.Component {
      * @curGroupInfo {members: [], groupInfo: {}}
      */
     changeCurGroup = (curGroupInfo) => {
-        this.setState({
-            curGroupInfo
-        })
+        this.setState({curGroupInfo})
     }
     addNewGroup = (group) => {
-        console.log('finish adding',group)
+        const userInfo = this.props.userInfo
+        console.log('finish adding', group)
+        group.members = [{...userInfo, owner: true}].concat(group.members)
+        let param = {
+            ownerName: userInfo.name,
+            owner_wa_code: userInfo.wa_code,
+            ...group
+        }
+        return new Promise((resolve, reject) => {
+            Services
+                .createGroup(param)
+                .then(res => {
+                    let data = res.data
+                    if (data.success) {
+                        // 改store的
+                        resolve()
+                        this
+                            .props
+                            .createNewGroup({
+                                ...param,
+                                group_id: 987
+                                
+                            })
+                    } else {
+                        reject(data.errMsg)
+                    }
+                })
+        })
     }
     editGroup = (group) => {
-        console.log('finish edit',group)
+        console.log('finish edit', group)
+
+        return new Promise((resolve, reject) => {
+            Services
+                .editGroup(group)
+                .then(res => {
+                    let data = res.data
+                    if (data.success) {
+                        // 改store的
+                        resolve()
+                        this
+                            .props
+                            .editGroup(group, this.groupInfo)
+                    } else {
+                        reject(data.errMsg)
+                    }
+                })
+        })
     }
     render() {
         let location = this.props.location
-        const {groupInfo, members} = this.state.curGroupInfo
-        let transtionName = this.state.prevPath&&this.state.prevPath.pathname !== this.props.match.path ? "slideRight" : "slideLeft"
-        let LinkedGroupLists = (props) => <GroupListsContainer changeCurGroup={this.changeCurGroup}  {...props}/>
-        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} {...props} title="新建组"/>
-        let EditGroup = (props) => <GroupSetting finishEdit={this.editGroup} {...props} groupInfo={groupInfo} members={members} title="编辑组" />
-        let DisplayGroup = (props) => <GroupDisplay {...props} groupInfo={groupInfo} members={members} title={groupInfo && groupInfo.name}/>
+        const {userInfo, groupInfo} = this.props
+        const {curGroupInfo} = this.state
+        let groupOwnData
+        let members
+        console.log('groupInfo', groupInfo)
+        groupInfo && groupInfo.some(group => {
+            if (group.group_id === curGroupInfo.group_id) {
+                ({
+                    members,
+                    ...groupOwnData
+                } = group)
+                return true
+            }
+            return false
+        })
+        let transtionName = this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
+            ? "slideRight"
+            : "slideLeft"
+        let LinkedGroupLists = (props) => <GroupLists
+            changeCurGroup={this.changeCurGroup}
+            {...props}
+            userInfo={userInfo}
+            groupInfo={groupInfo}/>
+        let CreateNewGroup = (props) => <GroupSetting finishEdit={this.addNewGroup} goBackAfterFinish={true} {...props} title="新建组"/>
+        let EditGroup = (props) => <GroupSetting
+            finishEdit={this.editGroup}
+            {...props}
+            curGroupInfo={groupOwnData}
+            members={members}
+            title="编辑组"/>
+        let DisplayGroup = (props) => <GroupDisplay
+            {...props}
+            curGroupInfo={groupOwnData}
+            members={members}
+            title={groupOwnData && groupOwnData.groupName}/>
         return (
             <div >
                 <TransitionGroup>
-                <CSSTransition key={location.key} classNames={transtionName} timeout={300}>
-                    <Switch location={location} >
-                        <Route exact path={this.props.match.path} key='list' component={LinkedGroupLists}></Route>
-                        <Route
-                        path={`${this.props.match.path}/create-group`}
-                        component={CreateNewGroup} key='create' ></Route>
-                        <Route
-                        path={`${this.props.match.path}/edit-group`}
-                        component={EditGroup} key='edit' ></Route>
-                        <Route
-                        path={`${this.props.match.path}/display-group`}
-                        component={DisplayGroup} key='display' ></Route>
-                    </Switch>
-                </CSSTransition>
+                    <CSSTransition key={location.key} classNames={transtionName} timeout={300}>
+                        <Switch location={location}>
+                            <Route
+                                exact
+                                path={this.props.match.path}
+                                key='list'
+                                component={LinkedGroupLists}></Route>
+                            <Route
+                                path={`${this.props.match.path}/create-group`}
+                                component={CreateNewGroup}
+                                key='create'></Route>
+                            <Route
+                                path={`${this.props.match.path}/edit-group`}
+                                component={EditGroup}
+                                key='edit'></Route>
+                            <Route
+                                path={`${this.props.match.path}/display-group`}
+                                component={DisplayGroup}
+                                key='display'></Route>
+                        </Switch>
+                    </CSSTransition>
                 </TransitionGroup>
             </div>
         )
     }
 }
-export default Index
+const mapStateToProps = state => {
+    return {userInfo: state.userInfo, groupInfo: state.groupInfo}
+}
+const mapDispatchToProps = dispatch => {
+    return {
+        createNewGroup(groupInfo) {
+            dispatch(createGroup(groupInfo))
+        },
+        editGroup(groupInfo) {
+            dispatch(editGroup(groupInfo))
+        }
+    }
+}
+const IndexContainer = connect(mapStateToProps, mapDispatchToProps)(Index)
+export default IndexContainer

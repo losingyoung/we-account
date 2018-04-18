@@ -11,7 +11,7 @@ import Notifications from '../notifications'
 import Add from '../add'
 import Members from '../members'
 import Me from '../me'
-import TYPE from '../../constants/constants'
+// import TYPE from '../../constants/constants'
 
 class Home extends React.Component {
     constructor(props) {

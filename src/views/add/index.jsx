@@ -81,8 +81,8 @@ class Add extends React.Component {
         let ownerSelectData = [
             [user].concat(groupInfo.map(group => {
                 return {
-                    value: group.id,
-                    label: group.name,
+                    value: group.group_id,
+                    label: group.groupName,
                     type: TYPE.GROUP,
                     ...group
                 }
@@ -309,7 +309,7 @@ class Add extends React.Component {
         }
         if (memberData) {
             params.group_id = curFor.value
-            params.groupName = memberData.name
+            params.groupName = memberData.groupName
             params.memberCode = memberValue[0]
             memberData.members.some(item => {
                 if (item.wa_code === memberValue[0]) {
@@ -333,7 +333,6 @@ class Add extends React.Component {
     }
     getOwnerPicker(ownerData) {
         if (ownerData) {
-            console.log('oo', ownerData)
             return (
                 <Picker cascade={false} data={ownerData} onOk={this.setOwnerPickerData}
                     onDismiss={e => { console.log('dismiss', e) }} value={this.props.curFor&&this.props.curFor.value ? [this.props.curFor.value]:[]}>
@@ -354,7 +353,6 @@ class Add extends React.Component {
         if (!userInfo) {
             return null
         }
-        console.log('user',curForValue)
         return (
             <Picker
                 cascade={false}

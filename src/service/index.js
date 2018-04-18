@@ -7,8 +7,8 @@ export const getUserInfo = params => axios.post('/api/user/get_user_info', param
 
 /* Group */
 export const getGroups = params => axios.post('/api/group/get_groups_by_wa_code', params)
-
-
+export const createGroup = params => axios.post('/api/group/create_group', params)
+export const editGroup = params => axios.post('/api/group/edit_group', params)
 
 /* category icons*/
 

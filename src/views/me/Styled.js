@@ -37,7 +37,10 @@ align-items:flex-start;
        margin-bottom:5px; 
     }
 `
-
+export const ArrowRightContainer = Styled.div`
+  width:32px;
+  text-align: right;
+`
 export const ArrowRight = Styled.i`
-font-size:30px;
+font-size:36px;
 `

@@ -44,8 +44,8 @@ class DashBoard extends React.Component {
         let ownerSelectData = [
             [user].concat(groupInfo.map(group => {
                 return {
-                    value: group.id,
-                    label: group.name,
+                    value: group.group_id,
+                    label: group.groupName,
                     type: TYPE.GROUP,
                     ...group
                 }
