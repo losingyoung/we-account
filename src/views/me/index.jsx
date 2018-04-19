@@ -15,7 +15,7 @@ import {
 } from 'antd-mobile'
 import SlideTransition from "../../components/slide-transition";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
-
+import ImgCroper from "../../components/img-croper";
 const ListItem = List.Item;
 // import {  } from "module";
 class Me extends React.Component {
@@ -98,7 +98,9 @@ class EditMe extends React.Component {
     state = {
         name: this.props.userInfo && this.props.userInfo.name,
         tel: this.props.userInfo && this.props.userInfo.tel,
-        avatar: this.props.userInfo && this.props.userInfo.avatar
+        avatar: this.props.userInfo && this.props.userInfo.avatar,
+        showImgCroper: false,
+        uploadedImg: ''
     }
     goBack = () => {
         this
@@ -115,11 +117,9 @@ class EditMe extends React.Component {
                 Modal.alert('', '上传图片失败')
                 return;
             }
-            if (!dataURL) {
-                Modal.alert('', '上传图片失败')
-                return;
-            }
-            this.setState({avatar: dataURL})
+
+            this.setState({showImgCroper: true,
+                uploadedImg: dataURL})
             console.log('success', dataURL, file)
         }
         fileReader.readAsDataURL(file)
@@ -137,7 +137,7 @@ class EditMe extends React.Component {
         this.goBack()
     }
     render() {
-        const {name, tel, avatar} = this.state
+        const {name, tel, avatar, showImgCroper, uploadedImg} = this.state
         const avatarItem = (
             <Styled.ChangeAvatarContainer>
                 <Styled.ChangeAvatarImg avatarImg={avatar}>
@@ -157,6 +157,7 @@ class EditMe extends React.Component {
                 <WhiteSpace/>
                 <List>
                     <ListItem extra={avatarItem} arrow="horizontal">头像</ListItem>
+                    {showImgCroper &&<ImgCroper imgToCrop={uploadedImg} ></ImgCroper>}
                     <InputItem className="align-right" value={name} onChange={this.changeName}>名称</InputItem>
                     <InputItem
                         className="align-right"

@@ -74,7 +74,7 @@ export const ChangeAvatarImg = Styled.div `
   .avatar-input{
     opacity: 0;
     position: absolute;
-    right: 0;
+    left: 0;
     height: 100%;
   }
 `
