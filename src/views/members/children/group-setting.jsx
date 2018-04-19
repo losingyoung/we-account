@@ -24,7 +24,7 @@ class GroupSetting extends React.Component {
         multiple: false,
         budget: (this.props.curGroupInfo && this.props.curGroupInfo.budget) || '',
         groupName: (this.props.curGroupInfo && this.props.curGroupInfo.groupName) || '',
-        members: this.props.members || []
+        members: (this.props.members && this.props.members.filter(item => !item.owner)) || []
     }
     endEdit = false
     shouldComponentUpdate() {
@@ -53,6 +53,7 @@ class GroupSetting extends React.Component {
     }
     //  完成添加组
     finishCreateGroup = () => {
+        const {userInfo} = this.props
         const {groupName, members, avatarFile, budget} = this.state
         const avatar = avatarFile.length > 0
             ? avatarFile[0]
@@ -65,7 +66,7 @@ class GroupSetting extends React.Component {
         
         this
             .props
-            .finishEdit({groupName, avatar, members, budget: budgetNum, group_id})
+            .finishEdit({groupName, avatar, members: [{...userInfo, owner: true}].concat(members), budget: budgetNum, group_id})
             .then(() => {
                 this.endEdit = true
                 Toast.success('保存成功', 1.5, () => {
@@ -84,8 +85,8 @@ class GroupSetting extends React.Component {
                 <NavBar icon={leftIcon} onLeftClick={this.goBack}>
                     <span>{title}</span>
                 </NavBar>
-
-                {/* <WhiteSpace/>
+                <WhiteSpace/>
+                {/* 
                 <WingBlank className="align-left">选择头像</WingBlank>
                 <ImagePicker
                     files={avatarFile}
