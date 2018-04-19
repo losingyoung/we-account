@@ -69,6 +69,7 @@ class Home extends React.Component {
     render() {
         let curUrl = this.props.match.url
         let location = this.props.location
+
         return (
             <div>
                 {/* <TransitionGroup>

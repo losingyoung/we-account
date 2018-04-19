@@ -1,9 +1,8 @@
 import axios from 'axios'
 /*user*/
 export const signUp = params => axios.post('/api/user/signup', params)
-
 export const getUserInfo = params => axios.post('/api/user/get_user_info', params)
-
+export const uploadUserAvatar = params => axios.post('/api/user/upload_user_avatar', params)
 
 /* Group */
 export const getGroups = params => axios.post('/api/group/get_groups_by_wa_code', params)
@@ -21,7 +20,6 @@ export const deleteCate = params => axios.post('/api/cate_icon/delete_icon', par
 
 /* 完成添加 */
 export const addAccountItem = params => axios.post('/api/account/add_item', params)
-
 
 export const getNotifications = params => axios.post('/api/notification/get_notifications', params)
 export const getUnreadNotifications = params => axios.post('/api/notification/get_unread_notifications', params)

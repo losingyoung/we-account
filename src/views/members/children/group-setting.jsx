@@ -26,13 +26,6 @@ class GroupSetting extends React.Component {
         groupName: (this.props.curGroupInfo && this.props.curGroupInfo.groupName) || '',
         members: (this.props.members && this.props.members.filter(item => !item.owner)) || []
     }
-    endEdit = false
-    shouldComponentUpdate() {
-        if (this.endEdit) {
-            return false
-        }
-        return true
-    }
     // onChangeGroupAvatar = (avatarFile, type, index) => {
     //     this.setState({avatarFile});
     // }
@@ -68,7 +61,6 @@ class GroupSetting extends React.Component {
             .props
             .finishEdit({groupName, avatar, members: [{...userInfo, owner: true}].concat(members), budget: budgetNum, group_id})
             .then(() => {
-                this.endEdit = true
                 Toast.success('保存成功', 1.5, () => {
                     // this.goBack()
                     this.props.goBackAfterFinish && this.goBack()

@@ -13,27 +13,47 @@ import {
     InputItem,
     Toast
 } from 'antd-mobile'
+import SlideTransition from "../../components/slide-transition";
+import {TransitionGroup, CSSTransition} from "react-transition-group";
+
 const ListItem = List.Item;
 // import {  } from "module";
 class Me extends React.Component {
-
+    state = {
+        showBigAvatar: false
+    }
     logout() {
-      this.props.history.replace('')
+        this
+            .props
+            .history
+            .replace('')
     }
     getGender(val) {
-        return val === "0" ? "fa fa-mars" : "fa fa-venus"
+        return val === "0"
+            ? "fa fa-mars"
+            : "fa fa-venus"
     }
     changeUseInfo = () => {
         console.log(this.props)
         let curUrl = this.props.match.url
-        this.props.history.push(curUrl+'/edit-me')
+        this
+            .props
+            .history
+            .push(curUrl + '/edit-me')
+    }
+    showBigAvatar = () => {
+        this.setState({showBigAvatar: true})
+    }
+    hideBigAvatar = () => {
+        this.setState({showBigAvatar: false})
     }
     render() {
         const {userInfo} = this.props
+        const {showBigAvatar} = this.state
         if (!userInfo) {
             return (
                 <div>
-                    <WhiteSpace />
+                    <WhiteSpace/>
                     加载中
                 </div>
             )
@@ -44,7 +64,16 @@ class Me extends React.Component {
                 <Styled.InfoBox>
                     <Styled.InfoWrapper>
                         <Styled.AvatarWrapper>
-                            <Styled.AvatarImg src={userInfo.avatar} />
+                            <Styled.AvatarImg src={userInfo.avatarThumbnail} onClick={this.showBigAvatar}/>
+                            <Styled.BigAvatarImgOverlay
+                                onClick={this.hideBigAvatar}
+                                style={{
+                                display: showBigAvatar
+                                    ? 'block'
+                                    : 'none'
+                            }}>
+                                <Styled.BigAvatarImg src={userInfo.avatar}/>
+                            </Styled.BigAvatarImgOverlay>
                         </Styled.AvatarWrapper>
                         <Styled.Infos>
                             <span>{userInfo.name}</span>
@@ -52,11 +81,15 @@ class Me extends React.Component {
                         </Styled.Infos>
                     </Styled.InfoWrapper>
                     <Styled.ArrowRightContainer onClick={this.changeUseInfo}>
-                       <Styled.ArrowRight className="fa fa-angle-right"/>
+                        <Styled.ArrowRight className="fa fa-angle-right"/>
                     </Styled.ArrowRightContainer>
                 </Styled.InfoBox>
-                <WhiteSpace size='md' />
-                <Button type='primary' onClick={() => {this.logout()}}>退出账号</Button>
+                <WhiteSpace size='md'/>
+                <Button
+                    type='primary'
+                    onClick={() => {
+                    this.logout()
+                }}>退出账号</Button>
             </div>
         )
     }
@@ -64,7 +97,8 @@ class Me extends React.Component {
 class EditMe extends React.Component {
     state = {
         name: this.props.userInfo && this.props.userInfo.name,
-        tel: this.props.userInfo && this.props.userInfo.tel
+        tel: this.props.userInfo && this.props.userInfo.tel,
+        avatar: this.props.userInfo && this.props.userInfo.avatar
     }
     goBack = () => {
         this
@@ -72,60 +106,111 @@ class EditMe extends React.Component {
             .history
             .go(-1)
     }
-    changeAvatar = () => {
-
+    changeAvatar = (event) => {
+        let file = event.target.files[0]
+        let fileReader = new FileReader()
+        fileReader.onload = e => {
+            const dataURL = e.target.result;
+            if (!dataURL) {
+                Modal.alert('', '上传图片失败')
+                return;
+            }
+            if (!dataURL) {
+                Modal.alert('', '上传图片失败')
+                return;
+            }
+            this.setState({avatar: dataURL})
+            console.log('success', dataURL, file)
+        }
+        fileReader.readAsDataURL(file)
     }
     changeName = (val) => {
-      this.setState({
-          name: val
-      })
+        this.setState({name: val})
     }
     changeTel = (val) => {
-        this.setState({
-            tel: val
-        })
+        this.setState({tel: val})
     }
     finishEdit = () => {
-        this.props.finishEdit(this.state)
+        this
+            .props
+            .finishEdit(this.state)
         this.goBack()
     }
     render() {
-        const {name, tel} = this.state
+        const {name, tel, avatar} = this.state
+        const avatarItem = (
+            <Styled.ChangeAvatarContainer>
+                <Styled.ChangeAvatarImg avatarImg={avatar}>
+                    <input
+                        type="file"
+                        accept='image/*'
+                        className='avatar-input'
+                        onChange={this.changeAvatar}/>
+                </Styled.ChangeAvatarImg>
+            </Styled.ChangeAvatarContainer>
+        )
         return (
             <div>
-                <NavBar icon={<Icon type="left"/>} onLeftClick={this.goBack}>
+                <NavBar icon={< Icon type = "left" />} onLeftClick={this.goBack}>
                     <span>修改个人信息</span>
                 </NavBar>
-                <WhiteSpace />
+                <WhiteSpace/>
                 <List>
-                    <ListItem extra={<div>extra</div>} arrow="horizontal" onClick={this.changeAvatar}>头像</ListItem>
+                    <ListItem extra={avatarItem} arrow="horizontal">头像</ListItem>
                     <InputItem className="align-right" value={name} onChange={this.changeName}>名称</InputItem>
-                    <InputItem className="align-right" type="phone" value={tel} onChange={this.changeTel}>手机</InputItem>
+                    <InputItem
+                        className="align-right"
+                        type="phone"
+                        value={tel}
+                        onChange={this.changeTel}>手机</InputItem>
                 </List>
-                <WhiteSpace />
+                <WhiteSpace/>
                 <Button onClick={this.finishEdit} type='primary'>完成</Button>
             </div>
         )
     }
 }
 class MeContainer extends React.Component {
+    state = {
+        prevPath: ''
+    }
+    componentWillReceiveProps(nextProps) {
+        if (this.props.location !== nextProps.location) {
+            this.setState({
+                prevPath: this.props.location
+            })
+        }
+    }
     finishEdit = (newUserInfo) => {
-       console.log('finish new', newUserInfo)
+        console.log('finish new', newUserInfo)
     }
     render() {
-        const {userInfo, match} = this.props
+        const {userInfo, match, location} = this.props
+                const transtionName =this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
+                ? "slideRight"
+                : "slideLeft"
         return (
-            <Switch>
-                <Route path={match.path} exact render={(props) => <Me userInfo={userInfo} {...props}/>}/>
-                <Route path={`${match.path}/edit-me`} render={(props) => <EditMe finishEdit={this.finishEdit} userInfo={userInfo} {...props}/>}/>
-            </Switch>
+            <SlideTransition locationKey={location.key}  transtionName={transtionName}  timeout={300}>
+                <Switch location={location}>
+                    <Route
+                        path={match.path}
+                        exact
+                        render={(props) => <Me userInfo={userInfo} {...props}/>}
+                        key='me'/>
+                    <Route
+                        path={`${match.path}/edit-me`}
+                        render={(props) => <EditMe
+                        finishEdit={this.finishEdit}
+                        userInfo={userInfo}
+                        {...props}
+                        key='editMe'/>}/>
+                </Switch>
+            </SlideTransition>
         )
     }
 }
 const mapStateToProps = state => {
-    return {
-        userInfo: state.userInfo
-    }
+    return {userInfo: state.userInfo}
 }
 
 export default connect(mapStateToProps)(MeContainer)

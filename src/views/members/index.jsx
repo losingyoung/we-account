@@ -266,7 +266,7 @@ class Index extends React.Component {
         const {curGroupInfo} = this.state
         let groupOwnData
         let members
-        console.log('groupInfo', groupInfo)
+        console.log('key', location.key)
         groupInfo && groupInfo.some(group => {
             if (group.group_id === curGroupInfo.group_id) {
                 ({
