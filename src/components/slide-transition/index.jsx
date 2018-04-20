@@ -12,7 +12,7 @@ class TransitionSlide extends React.Component {
                 {this.props.children}
               </CSSTransition>
             </TransitionGroup>
-        )
+        )   
     }
 }
 TransitionSlide.defaultProps = {

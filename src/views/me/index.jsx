@@ -15,7 +15,7 @@ import {
 } from 'antd-mobile'
 import SlideTransition from "../../components/slide-transition";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
-import ImgCroper from "../../components/img-croper";
+import ImgCroper from "../../components/img-croper/index";
 const ListItem = List.Item;
 // import {  } from "module";
 class Me extends React.Component {
@@ -100,6 +100,7 @@ class EditMe extends React.Component {
         tel: this.props.userInfo && this.props.userInfo.tel,
         avatar: this.props.userInfo && this.props.userInfo.avatar,
         showImgCroper: false,
+        avatarFile:'',
         uploadedImg: ''
     }
     goBack = () => {
@@ -109,7 +110,7 @@ class EditMe extends React.Component {
             .go(-1)
     }
     changeAvatar = (event) => {
-        let file = event.target.files[0]
+        let avatarFile = event.target.files[0]
         let fileReader = new FileReader()
         fileReader.onload = e => {
             const dataURL = e.target.result;
@@ -117,12 +118,30 @@ class EditMe extends React.Component {
                 Modal.alert('', '上传图片失败')
                 return;
             }
-
-            this.setState({showImgCroper: true,
-                uploadedImg: dataURL})
-            console.log('success', dataURL, file)
+            this.setState({
+                showImgCroper: true,
+                uploadedImg: dataURL,
+                avatarFile
+            })
+            // console.log('success', dataURL, file)
         }
-        fileReader.readAsDataURL(file)
+        fileReader.readAsDataURL(avatarFile)
+    }
+    cancelImgCroper = () => {
+        this.avatarInputEl.value = []
+        this.setState({
+            showImgCroper: false,
+            uploadedImg: ''
+        })
+    }
+    completeCropImg = (dataUrl) => {
+        console.log()
+        this.avatarInputEl.value = []
+        this.setState({
+            showImgCroper: false,
+            uploadedImg: '',
+            avatar:dataUrl
+        })
     }
     changeName = (val) => {
         this.setState({name: val})
@@ -137,11 +156,12 @@ class EditMe extends React.Component {
         this.goBack()
     }
     render() {
-        const {name, tel, avatar, showImgCroper, uploadedImg} = this.state
+        const {name, tel, avatar, showImgCroper, uploadedImg, avatarFile} = this.state
         const avatarItem = (
             <Styled.ChangeAvatarContainer>
                 <Styled.ChangeAvatarImg avatarImg={avatar}>
                     <input
+                        ref={el => this.avatarInputEl = el}
                         type="file"
                         accept='image/*'
                         className='avatar-input'
@@ -157,7 +177,7 @@ class EditMe extends React.Component {
                 <WhiteSpace/>
                 <List>
                     <ListItem extra={avatarItem} arrow="horizontal">头像</ListItem>
-                    {showImgCroper &&<ImgCroper imgToCrop={uploadedImg} ></ImgCroper>}
+                    {showImgCroper &&<ImgCroper imgToCrop={uploadedImg} avatarFile={avatarFile} onCancel={this.cancelImgCroper} onComplete={this.completeCropImg}></ImgCroper>}
                     <InputItem className="align-right" value={name} onChange={this.changeName}>名称</InputItem>
                     <InputItem
                         className="align-right"
@@ -187,7 +207,7 @@ class MeContainer extends React.Component {
     }
     render() {
         const {userInfo, match, location} = this.props
-                const transtionName =this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
+        const transtionName =this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
                 ? "slideRight"
                 : "slideLeft"
         return (
