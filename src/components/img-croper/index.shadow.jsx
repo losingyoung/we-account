@@ -1,6 +1,8 @@
 import React from "react";
 import Styled from "styled-components";
 import PropTypes from 'prop-types';
+import './plugin/image-clip.js'
+import './plugin/image-clip.css'
 const Container = Styled.div `
 background:#000;
 position:fixed;
@@ -149,13 +151,22 @@ class ImgCroper extends React.Component {
         return imgRotation;
     }
     componentWillMount() {
-        console.log('mount')
-        if (this.reader) {
-            return
-        }
-        this.getOrientation(this.props.avatarFile,(rotate) => {
-            this.reader = new FileReader();
-            this.reader.onload = e => {
+        this.getOrientation(this.props.avatarFile,(orientation) => {
+            this.rotateStep = 0
+            switch (orientation) {
+                case 3:
+                    this.rotateStep = 2;
+                    break;
+                case 6:
+                    this.rotateStep = 1;
+                    break;
+                case 8:
+                    this.rotateStep = 3;
+                    break;
+                default:
+            }
+            let reader = new FileReader();
+            reader.onload = e => {
                 const imgDataUrl = e.target.result;
                 if (!imgDataUrl) {
                     if (this.props.onFail) {
@@ -166,22 +177,103 @@ class ImgCroper extends React.Component {
                     return;
                 }
                 // this.ctx = this .imgCanvas .getContext("2d")
-                this.setState({rotate})
-                alert(rotate)
-                let img = new Image()
-                img.onload = this.onLoadImg
-                img.src = imgDataUrl
-                // this.ctx.rotate(90*Math.PI/180)
+                this.img = new Image()
+                this.img.onload = () => {
+                    this.initCanvs()
+                    this.initClip()
+                    this.draw()
+                }
+                this.img.src = imgDataUrl
             }
-            this
-                .reader
+            reader
                 .readAsDataURL(this.props.avatarFile);
         })
 
 
     }
+    getPixelRatio() {
+        // 注意，backingStorePixelRatio属性已弃用
+        var ratio = window.devicePixelRatio || 1;
+        // if (this.os.ios && this.os.iphone) {
+        //     ratio *= this.options.iphoneFixedRatio || 1;
+        // }
+        return ratio;
+    }
+    initCanvs() {
+        this.ctxFull = this.canvasFull.getContext('2d');
+        this.canvasFull.className = 'clip-canvas-full';
+        // this.smoothCtx(this.ctxFull);
+
+        // 实际的像素比，绘制时基于这个比例绘制
+        this.RATIO_PIXEL = this.getPixelRatio(this.ctxFull);
+        // 获取图片的宽高比
+        var wPerH = this.img.width / this.img.height;
+        var oldWidth = this.container.offsetWidth || window.innerWidth;
+        // container的宽度 高度
+        this.oldWidth = oldWidth;
+        this.oldHeight = oldWidth / wPerH;
+
+        // 计算弧度
+        var degree = this.rotateStep * 90 * Math.PI / 180;
+         // 同时旋转mag canvas
+         if (this.rotateStep === 0) {
+            this.resizeCanvas(oldWidth, this.oldHeight);
+        } else if (this.rotateStep === 1) {
+            this.resizeCanvas(this.oldHeight, oldWidth);
+            this.ctxFull.rotate(degree);
+            this.ctxFull.translate(0, -this.canvasFull.width);
+        } else if (this.rotateStep === 2) {
+            this.resizeCanvas(oldWidth, this.oldHeight);
+            this.ctxFull.rotate(degree);
+            this.ctxFull.translate(-this.canvasFull.width, -this.canvasFull.height);
+        } else if (this.rotateStep === 3) {
+            this.resizeCanvas(this.oldHeight, oldWidth);
+            this.ctxFull.rotate(degree);
+            this.ctxFull.translate(-this.canvasFull.height, 0);
+        }
+    }
+    resizeCanvas(width, height) {
+        var maxCssHeight = window.innerHeight - 40;
+        var wPerH = width / height;
+        var legalWidth = this.oldWidth;
+        var legalHeight = legalWidth / wPerH;
+
+        if (maxCssHeight && legalHeight > maxCssHeight) {
+            legalHeight = maxCssHeight;
+            legalWidth = legalHeight * wPerH;
+        }
+        this.marginLeft = (this.oldWidth - legalWidth) / 2;
+
+        this.canvasFull.style.width = legalWidth + 'px';
+        this.oldWidth = legalWidth
+        this.canvasFull.style.height = legalHeight + 'px';
+        this.oldHeight = legalHeight
+        this.canvasFull.style.marginLeft = this.marginLeft + 'px';
+        this.canvasFull.width = legalWidth * this.RATIO_PIXEL;
+        this.canvasFull.height = legalHeight * this.RATIO_PIXEL;
+
+        if (this.rotateStep & 1) {
+            this.scale = this.canvasFull.width / this.img.height;
+        } else {
+            this.scale = this.canvasFull.width / this.img.width;
+        }
+    }
+    initClip () {
+        this.clipRectSize = Math.min(this.oldHeight, this.oldWidth)
+        this.clipRect.style.height = this.clipRectSize + "px"
+        this.clipRect.style.width = this.clipRectSize + "px"
+    }
+    draw() {
+       this.drawImage()
+    }
+    drawImage() {
+        if (this.rotateStep & 1) {
+            this.ctxFull.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvasFull.height, this.canvasFull.width);
+        } else {
+            this.ctxFull.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvasFull.width, this.canvasFull.height);
+        }
+    }
     onLoadImg = (e) => {
-        console.log('onload', e)
         const imgEl = e.target
         const imgHeight = imgEl.height
         const imgWidth = imgEl.width
@@ -255,7 +347,6 @@ class ImgCroper extends React.Component {
         })
     }
     onComplete = () => {
-        alert('click')
         const {cropSize, cropLeft, cropTop} = this.state
         const quality = 0.92
         let ctx = this
@@ -265,7 +356,7 @@ class ImgCroper extends React.Component {
         let top = cropTop - this.minTop
         var degree = 90 * Math.PI / 180;
 
-        ctx.rotate(degree);
+        // ctx.rotate(degree);
 
         // natural是实际的像素值 drawimage的时候用的其实是natual， 所以乘上才正确
         const ratio = this.originImgEl.naturalWidth / this.originImgEl.width
@@ -274,7 +365,7 @@ class ImgCroper extends React.Component {
         // ratio, cropSize * ratio, 0, 0, cropSize, cropSize) const dataUrl = this
         // .imgCanvas     .toDataURL('image/jpeg', quality); this.props.onComplete &&
         // this     .props     .onComplete(dataUrl)
-        // ctx.rotate(130 * (Math.PI / 180))
+        ctx.rotate(130 * (Math.PI / 180))
     }
     render() {
         const {onCancel} = this.props
@@ -292,7 +383,12 @@ class ImgCroper extends React.Component {
                     <CancelButton onClick={onCancel}>取消</CancelButton>
                     <OkButton onClick={this.onComplete}>完成</OkButton>
                 </ButtonBar>
-                <OriginImgContainer
+                <div ref={el => this.container = el} style={{position: "relative", width:this.oldWidth, height: this.oldHeight}}>
+                  <canvas ref={el => this.canvasFull = el} style={{position:"absolute", left:0}}></canvas>
+                  <div ref={el => this.clipRect = el} style={{position:"absolute", border: "1px solid #eee"}}></div>
+                </div>
+               
+                {/* <OriginImgContainer
                     width={imgWidth}
                     height={imgHeight}
                     innerRef={el => this.originContainerImgEl = el}>
@@ -322,7 +418,7 @@ class ImgCroper extends React.Component {
                         ref={el => this.imgCanvas = el}
                         height={cropSize * 2}
                         width={cropSize * 2}></canvas>
-                </OriginImgContainer>
+                </OriginImgContainer> */}
 
             </Container>
         )

@@ -273,7 +273,6 @@ var ImgClip$1 = function () {
             var clipRect = document.createElement('div');
 
             clipRect.className = 'clip-rect';
-
             this.clipRect = clipRect;
             this.container.appendChild(this.clipRect);
             this.domChildren.push(this.clipRect);
