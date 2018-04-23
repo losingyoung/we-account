@@ -15,7 +15,7 @@ import {
 } from 'antd-mobile'
 import SlideTransition from "../../components/slide-transition";
 import {TransitionGroup, CSSTransition} from "react-transition-group";
-import ImgCroper from "../../components/img-croper/index";
+import ImgCroper from "../../components/img-croper/index.shadow";
 const ListItem = List.Item;
 // import {  } from "module";
 class Me extends React.Component {
@@ -111,21 +111,25 @@ class EditMe extends React.Component {
     }
     changeAvatar = (event) => {
         let avatarFile = event.target.files[0]
-        let fileReader = new FileReader()
-        fileReader.onload = e => {
-            const dataURL = e.target.result;
-            if (!dataURL) {
-                Modal.alert('', '上传图片失败')
-                return;
-            }
-            this.setState({
-                showImgCroper: true,
-                uploadedImg: dataURL,
-                avatarFile
-            })
-            // console.log('success', dataURL, file)
-        }
-        fileReader.readAsDataURL(avatarFile)
+        this.setState({
+            showImgCroper: true,
+            avatarFile
+        })
+        // let fileReader = new FileReader()
+        // fileReader.onload = e => {
+        //     const dataURL = e.target.result;
+        //     if (!dataURL) {
+        //         Modal.alert('', '上传图片失败')
+        //         return;
+        //     }
+        //     this.setState({
+        //         showImgCroper: true,
+        //         uploadedImg: dataURL,
+        //         avatarFile
+        //     })
+        //     // console.log('success', dataURL, file)
+        // }
+        // fileReader.readAsDataURL(avatarFile)
     }
     cancelImgCroper = () => {
         this.avatarInputEl.value = []
