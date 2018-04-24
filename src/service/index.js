@@ -3,6 +3,7 @@ import axios from 'axios'
 export const signUp = params => axios.post('/api/user/signup', params)
 export const getUserInfo = params => axios.post('/api/user/get_user_info', params)
 export const uploadUserAvatar = params => axios.post('/api/user/upload_user_avatar', params)
+export const updateUserInfo = params => axios.post('/api/user/update_user_info', params)
 
 /* Group */
 export const getGroups = params => axios.post('/api/group/get_groups_by_wa_code', params)

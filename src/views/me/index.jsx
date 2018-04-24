@@ -1,21 +1,24 @@
 import React from 'react'
 import * as Styled from './Styled'
+import * as Service from "../../service";
 import {connect} from 'react-redux'
 import {Switch, Route} from 'react-router'
 import {
     NavBar,
     Icon,
     Button,
-    WingBlank,
+    // WingBlank,
     WhiteSpace,
     List,
     Modal,
     InputItem,
-    Toast
+    // Toast
 } from 'antd-mobile'
 import SlideTransition from "../../components/slide-transition";
-import {TransitionGroup, CSSTransition} from "react-transition-group";
-import ImgCroper from "../../components/img-croper/index.shadow";
+// import {TransitionGroup, CSSTransition} from "react-transition-group";
+import ImgCroper from "../../components/img-croper";
+import { updateUserInfo } from "../../store/actions/userInfo";
+import {setGroupInfo} from '../../store/actions/groupInfo'
 const ListItem = List.Item;
 // import {  } from "module";
 class Me extends React.Component {
@@ -40,6 +43,9 @@ class Me extends React.Component {
             .props
             .history
             .push(curUrl + '/edit-me')
+    }
+    stopBigAvatrClose = (e) => {
+        e.stopPropagation()
     }
     showBigAvatar = () => {
         this.setState({showBigAvatar: true})
@@ -72,7 +78,7 @@ class Me extends React.Component {
                                     ? 'block'
                                     : 'none'
                             }}>
-                                <Styled.BigAvatarImg src={userInfo.avatar}/>
+                                <Styled.BigAvatarImg src={userInfo.avatar} onClick={this.stopBigAvatrClose}/>
                             </Styled.BigAvatarImgOverlay>
                         </Styled.AvatarWrapper>
                         <Styled.Infos>
@@ -100,52 +106,28 @@ class EditMe extends React.Component {
         tel: this.props.userInfo && this.props.userInfo.tel,
         avatar: this.props.userInfo && this.props.userInfo.avatar,
         showImgCroper: false,
-        avatarFile:'',
+        avatarFile: '',
         uploadedImg: ''
     }
     goBack = () => {
-        this
-            .props
-            .history
-            .go(-1)
+        this.props.history.go(-1)
     }
     changeAvatar = (event) => {
         let avatarFile = event.target.files[0]
-        this.setState({
-            showImgCroper: true,
-            avatarFile
-        })
-        // let fileReader = new FileReader()
-        // fileReader.onload = e => {
-        //     const dataURL = e.target.result;
-        //     if (!dataURL) {
-        //         Modal.alert('', '上传图片失败')
-        //         return;
-        //     }
-        //     this.setState({
-        //         showImgCroper: true,
-        //         uploadedImg: dataURL,
-        //         avatarFile
-        //     })
-        //     // console.log('success', dataURL, file)
-        // }
-        // fileReader.readAsDataURL(avatarFile)
+        this.setState({showImgCroper: true, avatarFile})
     }
     cancelImgCroper = () => {
         this.avatarInputEl.value = []
-        this.setState({
-            showImgCroper: false,
-            uploadedImg: ''
-        })
+        this.setState({showImgCroper: false, uploadedImg: ''})
     }
     completeCropImg = (dataUrl) => {
-        console.log()
         this.avatarInputEl.value = []
-        this.setState({
-            showImgCroper: false,
-            uploadedImg: '',
-            avatar:dataUrl
-        })
+        if (!dataUrl) {
+            Modal.alert('','上传失败')
+            this.setState({showImgCroper: false, uploadedImg: ''})
+            return
+        }
+        this.setState({showImgCroper: false, uploadedImg: '', avatar: dataUrl})
     }
     changeName = (val) => {
         this.setState({name: val})
@@ -154,13 +136,36 @@ class EditMe extends React.Component {
         this.setState({tel: val})
     }
     finishEdit = () => {
-        this
-            .props
-            .finishEdit(this.state)
-        this.goBack()
+        const newData = {
+            wa_code: this.props.userInfo.wa_code,
+            name: this.state.name,
+            tel: this.state.tel,
+            avatar: this.state.avatar,
+            avatarThumbnail: this.state.avatar
+        }
+        Service.updateUserInfo(newData).then(res => {
+            let data = res.data
+            if (data.success) {
+                Modal.alert('保存成功')
+                this
+                .props
+                .finishEdit({groupInfo: data.groupInfo,...newData})
+            // this.goBack()
+            } else {
+                Modal.alert('保存失败', data.errorMsg)
+            }
+        })
+
     }
     render() {
-        const {name, tel, avatar, showImgCroper, uploadedImg, avatarFile} = this.state
+        const {
+            name,
+            tel,
+            avatar,
+            showImgCroper,
+            uploadedImg,
+            avatarFile
+        } = this.state
         const avatarItem = (
             <Styled.ChangeAvatarContainer>
                 <Styled.ChangeAvatarImg avatarImg={avatar}>
@@ -181,7 +186,18 @@ class EditMe extends React.Component {
                 <WhiteSpace/>
                 <List>
                     <ListItem extra={avatarItem} arrow="horizontal">头像</ListItem>
-                    {showImgCroper &&<ImgCroper imgToCrop={uploadedImg} avatarFile={avatarFile} onCancel={this.cancelImgCroper} onComplete={this.completeCropImg}></ImgCroper>}
+                    {showImgCroper &&< ImgCroper imgToCrop = {
+                        uploadedImg
+                    }
+                    avatarFile = {
+                        avatarFile
+                    }
+                    onCancel = {
+                        this.cancelImgCroper
+                    }
+                    onComplete = {
+                        this.completeCropImg
+                    } > </ImgCroper>}
                     <InputItem className="align-right" value={name} onChange={this.changeName}>名称</InputItem>
                     <InputItem
                         className="align-right"
@@ -201,21 +217,25 @@ class MeContainer extends React.Component {
     }
     componentWillReceiveProps(nextProps) {
         if (this.props.location !== nextProps.location) {
-            this.setState({
-                prevPath: this.props.location
-            })
+            this.setState({prevPath: this.props.location})
         }
     }
     finishEdit = (newUserInfo) => {
+        const {groupInfo, ...userInfo} = newUserInfo
         console.log('finish new', newUserInfo)
+        this.props.updateUserInfo(userInfo)
+        this.props.setGroupInfo(groupInfo)
     }
     render() {
         const {userInfo, match, location} = this.props
-        const transtionName =this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
-                ? "slideRight"
-                : "slideLeft"
+        const transtionName = this.state.prevPath && this.state.prevPath.pathname !== this.props.match.path
+            ? "slideRight"
+            : "slideLeft"
         return (
-            <SlideTransition locationKey={location.key}  transtionName={transtionName}  timeout={300}>
+            <SlideTransition
+                locationKey={location.key}
+                transtionName={transtionName}
+                timeout={300}>
                 <Switch location={location}>
                     <Route
                         path={match.path}
@@ -237,5 +257,14 @@ class MeContainer extends React.Component {
 const mapStateToProps = state => {
     return {userInfo: state.userInfo}
 }
-
-export default connect(mapStateToProps)(MeContainer)
+const mapDispatchToProps = dispatch => {
+    return {
+        updateUserInfo(userInfo) {
+            dispatch(updateUserInfo(userInfo))
+        },
+        setGroupInfo(info) {
+            dispatch(setGroupInfo(info))
+        }
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(MeContainer)
