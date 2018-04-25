@@ -2,7 +2,7 @@ import React from "react";
 import Styled from "styled-components";
 import PropTypes from 'prop-types';
 // import './plugin/image-clip.js' import './plugin/image-clip.css'
-const Container = Styled.div `
+const Container = Styled.div`
 background:#000;
 position:fixed;
 top:0;
@@ -11,23 +11,23 @@ height:100%;
 width:100%;
 z-index:1000;
 `
-const ButtonBar = Styled.div `
+const ButtonBar = Styled.div`
 display:flex;
 justify-content:space-between;
 color:#fff;
 height:40px;
 font-size:14px;
 `
-const CancelButton = Styled.div `
+const CancelButton = Styled.div`
 margin: auto 0;
 padding:5px 10px;
 `
-const OkButton = Styled.div `
+const OkButton = Styled.div`
 margin: auto 0;
 color:#138000;
 padding:5px 10px;
 `
-const ImgContainer = Styled.div `
+const ImgContainer = Styled.div`
     position: relative;
     width: 100%;
     height: calc(100% - 40px);
@@ -38,8 +38,6 @@ const ImgCanvas = Styled.canvas`
 `
 const ClipRect = Styled.div`
 position:absolute;
-top:${props => props.top + "px"};
-left:${props => props.left + "px"};
 `
 /**
  *
@@ -55,8 +53,6 @@ class ImgCroper extends React.Component {
         imgWidth: 0,
         imgHeight: 0,
         cropSize: 0,
-        cropLeft: 0,
-        cropTop: 0,
         imgDataUrl: '',
         rotate: 0
     }
@@ -240,7 +236,6 @@ class ImgCroper extends React.Component {
         } else {
             this.scale = this.canvasFull.width / this.img.width;
         }
-        // this.setState({     cropLeft: this.marginLeft,     cropTop: this.canvasTop })
     }
     initClip() {
         this.clipRectSize = Math.min(this.oldHeight, this.oldWidth)
@@ -252,10 +247,10 @@ class ImgCroper extends React.Component {
         this.minLeft = 0
         this.maxTop = this.oldHeight - this.clipRectSize//Math.max()
         this.maxLeft = this.oldWidth - this.clipRectSize//Math.max()
-        this.setState({
-            cropLeft: (this.oldWidth - this.clipRectSize) /2,
-            cropTop: (this.oldHeight - this.clipRectSize) /2
-        })
+        this.cropLeft = (this.oldWidth - this.clipRectSize) / 2
+        this.cropTop = (this.oldHeight - this.clipRectSize) / 2
+        this.clipRect.style.top = this.cropTop + "px"
+        this.clipRect.style.left = this.cropLeft + "px"
     }
     draw() {
         if (this.rotateStep & 1) {
@@ -270,8 +265,6 @@ class ImgCroper extends React.Component {
 
         this.drawImage()
         this.drawMask()
-
-        const {cropTop, cropLeft} = this.state
         this
             .ctxFull
             .save()
@@ -281,11 +274,11 @@ class ImgCroper extends React.Component {
         if (this.rotateStep & 1) {
             this
                 .ctxFull
-                .rect(cropTop * this.RATIO_PIXEL, cropLeft * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL)
+                .rect(this.cropTop * this.RATIO_PIXEL, this.cropLeft * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL)
         } else {
             this
                 .ctxFull
-                .rect(cropLeft * this.RATIO_PIXEL, cropTop * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL)
+                .rect(this.cropLeft * this.RATIO_PIXEL, this.cropTop * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL, this.clipRectSize * this.RATIO_PIXEL)
         }
 
         this
@@ -326,18 +319,16 @@ class ImgCroper extends React.Component {
             .restore()
     }
     cropTouchStart = (e) => {
-        console.log('start')
         this.touchStartX = e.touches
             ? e.touches[0].pageX
             : e.pageX
         this.touchStartY = e.touches
             ? e.touches[0].pageY
             : e.pageY
-        this.cropStartTop = this.state.cropTop // parseFloat(this.cropBoxEL.style.top, 10)
-        this.cropStartLeft = this.state.cropLeft // parseFloat(this.cropBoxEL.style.left, 10)
+        this.cropStartTop = this.cropTop // parseFloat(this.cropBoxEL.style.top, 10)
+        this.cropStartLeft = this.cropLeft // parseFloat(this.cropBoxEL.style.left, 10)
     }
     cropTouchMove = (e) => {
-        console.log('move')
         const curX = e.touches
             ? e.touches[0].pageX
             : e.pageX
@@ -361,13 +352,14 @@ class ImgCroper extends React.Component {
         } else if (destX > this.maxLeft) {
             destX = this.maxLeft
         }
-        this.setState({cropLeft: destX, cropTop: destY})
-
+        this.cropLeft = destX
+        this.cropTop = destY
+        this.clipRect.style.left = destX + "px"
+        this.clipRect.style.top = destY + "px"
         this.draw()
     }
     onComplete = () => {
         try {
-            const {cropLeft, cropTop} = this.state
             const quality = 0.92
             this.transferCanvas.width = this.clipRectSize
             this.transferCanvas.style.width = this.clipRectSize + "px"
@@ -381,7 +373,7 @@ class ImgCroper extends React.Component {
                 .getContext("2d")
             // this.rotateStep = 1
             var degree = this.rotateStep * 90 * Math.PI / 180;
-            if (this.rotateStep === 0) {} else if (this.rotateStep === 1) {
+            if (this.rotateStep === 0) { } else if (this.rotateStep === 1) {
                 transferCtx.rotate(degree);
                 transferCtx.translate(0, -this.transferCanvas.width);
             } else if (this.rotateStep === 2) {
@@ -394,9 +386,9 @@ class ImgCroper extends React.Component {
 
             if (this.rotateStep & 1) {
                 // 最终像素要根据图片的来
-                transferCtx.drawImage(this.img, cropTop * this.RATIO_PIXEL / this.scale, cropLeft * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
+                transferCtx.drawImage(this.img, this.cropTop * this.RATIO_PIXEL / this.scale, this.cropLeft * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
             } else {
-                transferCtx.drawImage(this.img, cropLeft * this.RATIO_PIXEL / this.scale, cropTop * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
+                transferCtx.drawImage(this.img, this.cropLeft * this.RATIO_PIXEL / this.scale, this.cropTop * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
             }
             const dataUrl = this
                 .transferCanvas
@@ -411,8 +403,7 @@ class ImgCroper extends React.Component {
         }
     }
     render() {
-        const {onCancel} = this.props
-        const {cropTop, cropLeft} = this.state
+        const { onCancel } = this.props
         return (
             <Container>
                 <ButtonBar>
@@ -420,9 +411,9 @@ class ImgCroper extends React.Component {
                     <OkButton onClick={this.onComplete}>完成</OkButton>
                 </ButtonBar>
                 <ImgContainer innerRef={el => this.container = el}>
-                    <ImgCanvas innerRef={el => this.canvasFull = el}/>
+                    <ImgCanvas innerRef={el => this.canvasFull = el} />
                     <ClipRect innerRef={el => this.clipRect = el} onTouchStart={this.cropTouchStart}
-                        onTouchMove={this.cropTouchMove} top={cropTop} left={cropLeft}/>
+                        onTouchMove={this.cropTouchMove} />
                     <canvas ref={el => this.transferCanvas = el}></canvas>
                 </ImgContainer>
             </Container>
