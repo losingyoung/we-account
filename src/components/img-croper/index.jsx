@@ -38,8 +38,8 @@ const ImgCanvas = Styled.canvas`
 `
 const ClipRect = Styled.div`
 position:absolute;
-top:${props => props.top};
-left:${props => props.left};
+top:${props => props.top + "px"};
+left:${props => props.left + "px"};
 `
 /**
  *
@@ -250,8 +250,12 @@ class ImgCroper extends React.Component {
         this.clipRect.style.marginTop = this.marginTop + "px"
         this.minTop = 0
         this.minLeft = 0
-        this.maxTop = Math.max(this.oldHeight - this.clipRectSize)
-        this.maxLeft = Math.max(this.oldWidth - this.clipRectSize)
+        this.maxTop = this.oldHeight - this.clipRectSize//Math.max()
+        this.maxLeft = this.oldWidth - this.clipRectSize//Math.max()
+        this.setState({
+            cropLeft: (this.oldWidth - this.clipRectSize) /2,
+            cropTop: (this.oldHeight - this.clipRectSize) /2
+        })
     }
     draw() {
         if (this.rotateStep & 1) {
