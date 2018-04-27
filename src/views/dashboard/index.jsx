@@ -98,16 +98,14 @@ class DashBoard extends React.Component {
                 <NavBar mode="dark" >
                     {this.getOwnerPicker(ownerSelectData)}
                 </NavBar>
-                
+                总支出
+                距预算
                 最近添加项目
 
                 统计
-                总支出
-                距预算
                 日均
 
                 每一项支出／每天支出
-
             </div>
         )
     }
