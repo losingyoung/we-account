@@ -19,14 +19,18 @@ export const addCate = params => axios.post('/api/cate_icon/add_icon', params)
 export const updateCate = params => axios.post('/api/cate_icon/update_icon', params)
 export const deleteCate = params => axios.post('/api/cate_icon/delete_icon', params)
 
-/* 完成添加 */
+/* acount items*/
+export const getPersonalAccountItem = params => axios.post('/api/account/get_personal_account_items', params)
+export const getGroupAccountItems = params => axios.post('/api/account/get_group_account_items', params)
 export const addAccountItem = params => axios.post('/api/account/add_item', params)
+export const getAccountItem = params => axios.post('/api/account/get_account_items', params)
 
 export const getNotifications = params => axios.post('/api/notification/get_notifications', params)
 export const getUnreadNotifications = params => axios.post('/api/notification/get_unread_notifications', params)
 
 export const refuseRequest = params => axios.post('/api/notification/refuse_request', params)
 export const acceptRequest = params => axios.post('/api/notification/accept_request', params)
+
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)

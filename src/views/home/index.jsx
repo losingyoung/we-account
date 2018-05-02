@@ -75,7 +75,7 @@ class Home extends React.Component {
                 {/* <TransitionGroup>
 
                 <CSSTransition key={location.key} classNames="fade" timeout={300}> */}
-                    <Switch location={location} >
+                <Switch location={location} >
                     <Route path={curUrl} component={DashBoard} exact/>
                     <Route path={curUrl + '/notifications'} component={Notifications} />
                     <Route path={curUrl + '/add'} component={Add} />
