@@ -210,6 +210,7 @@ class Add extends React.Component {
     }
     // 窗口编辑的完成按钮
     confirmEditCate = ({ title, activeCateType }) => {
+        //===================================添加重名验证
         console.log('confirm', this.state.activeCate, title, activeCateType)
         const {userInfo, curFor} = this.props
         const { memberData, categoryInfo } = this.state

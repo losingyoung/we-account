@@ -3,6 +3,9 @@ import {connect} from "react-redux";
 import {setGroupPreference} from "../../store/actions/groupPreference";
 import {setAccountItems} from "../../store/actions/accountItems";
 import {NavBar, Picker} from 'antd-mobile';
+import echarts from 'echarts/lib/echarts';
+import 'echarts/lib/chart/line'
+// const echarts = require('../../assets/js/echarts');
 import Title from './children/title'
 import TYPE from '../../constants/constants'
 import * as Service from "../../service";
@@ -11,18 +14,18 @@ class DashBoard extends React.Component {
     state = {
         ownerSelectData: null
     }
-    componentWillReceiveProps(props) {
-        console.log('rev',props)
+    componentWillReceiveProps() {
         this.getOwnerPickerData()
     }
     componentDidMount() {
-        console.log('did')
         this.getOwnerPickerData()
         this.getAccountItems()
+        // this.initCharts()
+        console.log('didmount')
     }
     getOwnerPickerData() {
-        let {userInfo, groupInfo } = this.props
-        if ( !userInfo || !groupInfo || this.state.ownerSelectData) {
+        let {userInfo, groupInfo} = this.props
+        if (!userInfo || !groupInfo || this.state.ownerSelectData) {
             return
         }
 
@@ -52,6 +55,7 @@ class DashBoard extends React.Component {
         ]
         this.setState({ownerSelectData})
     }
+    // 切换选人/组
     setOwnerPickerData = ([curForValue, type]) => {
         if (typeof type === 'undefined') {
             let memberData = null
@@ -77,24 +81,50 @@ class DashBoard extends React.Component {
             .onChangeCurFor({value: curForValue, type})
         // this.setAccountItems({value: curForValue, type})
     }
+    // 找到对应的account
     setAccountItems({type, value}) {
-       if (!this.props.accountItems) {
-           return null
-       }
-       let accountItems = type === TYPE.PERSONAL ? this.props.accountItems.personalAccountItems : this.props.accountItems.groupAccountItems
-       let idKey = type === TYPE.PERSONAL ? 'wa_code' : 'group_id'
-       return accountItems.filter(item => {
-           return item[idKey] === value
-       })
+        if (!this.props.accountItems) {
+            return null
+        }
+        let accountItems = type === TYPE.PERSONAL
+            ? this.props.accountItems.personalAccountItems
+            : this.props.accountItems.groupAccountItems
+        let idKey = type === TYPE.PERSONAL
+            ? 'wa_code'
+            : 'group_id'
+        return accountItems.filter(item => {
+            return item[idKey] === value
+        })
     }
     getAccountItems() {
         if (!this.props.accountItems) {
-            Service.getAccountItem().then(res => {
-                this.props.getAccountItemsFromServer(res.data)
-                // console.log('ser', this.props.accountItems)
-            })
+            Service
+                .getAccountItem()
+                .then(res => {
+                    this
+                        .props
+                        .getAccountItemsFromServer(res.data)
+                    // console.log('ser', this.props.accountItems)
+                })
         }
 
+    }
+    initCharts(data) {
+        const overviewChart = echarts.init(this.overviewChart)
+        const overviewOption = {
+            xAxis: {
+                type: 'category',
+                data: data.date
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: data.data,
+                type: 'line'
+            }]
+        }
+        overviewChart.setOption(overviewOption);
     }
     getOwnerPicker(ownerSelectData) {
         if (ownerSelectData) {
@@ -119,18 +149,76 @@ class DashBoard extends React.Component {
             )
         }
     }
+    getAccountBody(account) {
+        if (!account) {
+            return (
+                <div>加载中...</div>
+            )
+        }
+        const leftBudget = account.budget > 0
+            ? <span>距预算: {account.budget - account.totalCost}</span>
+            : ''
+        return (
+            <div>
+                <div>tab1
+                    <span>总支出 {account.totalCost}
+                        {leftBudget}
+                    </span>
+                    <div>
+                        最近添加项目:
+                    </div>
+                    <div>
+                        {account.items.length > 0
+                            ? account
+                                .items
+                                .map(item => {
+                                    return (
+                                        <div key={item.itemId}>
+                                            <span>{item.description}</span>
+                                            <span>{item.price}</span>
+                                        </div>
+                                    )
+                                })
+                            : <span>无</span>}
+                    </div>
+
+                </div>
+                <div>tab2 统计 
+                    <div ref={el => this.overviewChart = el}  style={{width: "100%", height:"200px"}}></div>
+                    <div>日均: {account.averageDay}</div>
+                     每一项支出／每天支出
+                </div>
+            </div>
+        )
+    }
+    componentDidUpdate() {
+        console.log('did update')
+
+        if (this.overviewChart && this.account && this.account.chartData) {
+            this.initCharts(this.account.chartData.totalOverview)
+        }
+    }
     render() {
+        console.log('render')
         const {ownerSelectData} = this.state
-        
         let accounts = this.props.curFor && this.setAccountItems(this.props.curFor)
         let account = accounts && accounts[0]
-        console.log('items', accounts && accounts[0])
+        // let budget =
+        let targetFor = (ownerSelectData && this.props.curFor) && ownerSelectData[0].filter(item => {
+            return this.props.curFor.type === item.type && this.props.curFor.value === item.value
+        })
+        if (account && targetFor) {
+            account.budget = targetFor[0] && targetFor[0].budget
+        }
+        const accountBody = this.getAccountBody(account)
+        this.account = account
         return (
             <div>
                 <NavBar mode="dark">
                     {this.getOwnerPicker(ownerSelectData)}
                 </NavBar>
-                {account && <span>总支出 {account.totalCost} 距预算 最近添加项目 统计 日均 每一项支出／每天支出</span>}
+                {accountBody}
+
             </div>
         )
     }
