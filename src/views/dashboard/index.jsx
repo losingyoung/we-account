@@ -12,7 +12,9 @@ import * as Service from "../../service";
 
 class DashBoard extends React.Component {
     state = {
-        ownerSelectData: null
+        ownerSelectData: null,
+        overViewMonth:null,
+        overViewData:null
     }
     componentWillReceiveProps() {
         this.getOwnerPickerData()
@@ -21,7 +23,6 @@ class DashBoard extends React.Component {
         this.getOwnerPickerData()
         this.getAccountItems()
         // this.initCharts()
-        console.log('didmount')
     }
     getOwnerPickerData() {
         let {userInfo, groupInfo} = this.props
@@ -110,21 +111,61 @@ class DashBoard extends React.Component {
 
     }
     initCharts(data) {
-        const overviewChart = echarts.init(this.overviewChart)
+        if (!this.overviewChart) {
+            this.overviewChart = echarts.init(this.overviewChartDiv)
+            this.overviewChart.on('click',e => {
+                console.log('clicked',e)
+                this.setState({
+                    overViewMonth:e.name,
+                    overViewData:e.value
+                })
+            })
+        }
+        const maxNumber = Math.max.apply(Math, data.data)
+        const maxLength = maxNumber.toString()
+        const lenToLeft = []
+
+        console.log('max', maxLength)
         const overviewOption = {
             xAxis: {
                 type: 'category',
-                data: data.date
+                data: data.date,
+                name: '月'
             },
             yAxis: {
-                type: 'value'
+                type: 'value',
+                axisLine: {
+                    show: false
+                },
+                axisLabel: {
+                    show: false
+                },
+                axisTick: {
+                    show: false
+                }
             },
             series: [{
                 data: data.data,
                 type: 'line'
-            }]
+                // label: {
+                //     show: true,
+                //      rotate: 55,
+                //     distance:10,
+                //     offset:10
+                // }
+            }],
+            grid: {
+                top:30,
+                bottom: 30
+                // left: 70,
+                // right: '0'
+                // tooltip:{
+                //     show: true,
+                //     trigger: 'item'
+                // }
+            }
         }
-        overviewChart.setOption(overviewOption);
+        this.overviewChart.setOption(overviewOption);
     }
     getOwnerPicker(ownerSelectData) {
         if (ownerSelectData) {
@@ -155,6 +196,7 @@ class DashBoard extends React.Component {
                 <div>加载中...</div>
             )
         }
+        const {overViewMonth, overViewData} = this.state
         const leftBudget = account.budget > 0
             ? <span>距预算: {account.budget - account.totalCost}</span>
             : ''
@@ -184,18 +226,28 @@ class DashBoard extends React.Component {
 
                 </div>
                 <div>tab2 统计 
-                    <div ref={el => this.overviewChart = el}  style={{width: "100%", height:"200px"}}></div>
+                    <div>{overViewMonth}月 ￥{overViewData}</div>
+                    <div ref={el => this.overviewChartDiv = el}  style={{width: "100%", height:"150px"}}></div>
                     <div>日均: {account.averageDay}</div>
                      每一项支出／每天支出
                 </div>
             </div>
         )
     }
-    componentDidUpdate() {
-        console.log('did update')
+    setInitialOverViewData(data) {
+        if (data.date.length && data.data.length) {
+            this.setState({
+                overViewMonth:data.date[data.date.length - 1],
+                overViewData:data.data[data.data.length - 1]
+            })
+        }
 
-        if (this.overviewChart && this.account && this.account.chartData) {
+    }
+    componentDidUpdate() {
+       
+        if (this.overviewChartDiv && this.account && this.account.chartData && this.changeAccount) {
             this.initCharts(this.account.chartData.totalOverview)
+            this.setInitialOverViewData(this.account.chartData.totalOverview)
         }
     }
     render() {
@@ -209,9 +261,18 @@ class DashBoard extends React.Component {
         })
         if (account && targetFor) {
             account.budget = targetFor[0] && targetFor[0].budget
+            if (this.account !== account) {
+                this.changeAccount = true
+                this.account = account
+              
+
+            } else {
+                this.changeAccount = false
+            }
         }
         const accountBody = this.getAccountBody(account)
-        this.account = account
+        
+        
         return (
             <div>
                 <NavBar mode="dark">
