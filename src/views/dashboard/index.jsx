@@ -2,19 +2,22 @@ import React from 'react'
 import {connect} from "react-redux";
 import {setGroupPreference} from "../../store/actions/groupPreference";
 import {setAccountItems} from "../../store/actions/accountItems";
-import {NavBar, Picker} from 'antd-mobile';
+import {NavBar, Picker, SegmentedControl, WingBlank, WhiteSpace, Toast, Modal} from 'antd-mobile';
+import ToggleWrapper from '../../components/toggle-show'
 import echarts from 'echarts/lib/echarts';
 import 'echarts/lib/chart/line'
 // const echarts = require('../../assets/js/echarts');
 import Title from './children/title'
 import TYPE from '../../constants/constants'
 import * as Service from "../../service";
+import AccountItem from "./children/account-item";
 
 class DashBoard extends React.Component {
     state = {
         ownerSelectData: null,
         overViewMonth:null,
-        overViewData:null
+        overViewData:null,
+        selectedIndex: 0
     }
     componentWillReceiveProps() {
         this.getOwnerPickerData()
@@ -123,14 +126,11 @@ class DashBoard extends React.Component {
         }
         const maxNumber = Math.max.apply(Math, data.data)
         const maxLength = maxNumber.toString()
-        const lenToLeft = []
-
         console.log('max', maxLength)
         const overviewOption = {
             xAxis: {
                 type: 'category',
-                data: data.date,
-                name: '月'
+                data: data.date
             },
             yAxis: {
                 type: 'value',
@@ -155,7 +155,7 @@ class DashBoard extends React.Component {
                 // }
             }],
             grid: {
-                top:30,
+                top:20,
                 bottom: 30
                 // left: 70,
                 // right: '0'
@@ -166,6 +166,15 @@ class DashBoard extends React.Component {
             }
         }
         this.overviewChart.setOption(overviewOption);
+    }
+    // 切换标题栏
+    changeTab = e => {
+
+        const selectedIndex = e.nativeEvent.selectedSegmentIndex
+        console.log('index', selectedIndex)
+        this.setState({
+            selectedIndex
+        })
     }
     getOwnerPicker(ownerSelectData) {
         if (ownerSelectData) {
@@ -190,22 +199,41 @@ class DashBoard extends React.Component {
             )
         }
     }
+    delAccount = (account)=> {
+        console.log('del', account)
+        Modal.alert('删除', '确定删除吗?', [
+            { text: '取消'},
+            { text: '确定', onPress: () => {
+                Toast.loading('加载中...')
+                    setTimeout(() => {
+                        Toast.hide()
+                    }, 3000)
+            } },
+          ])
+    }
     getAccountBody(account) {
         if (!account) {
             return (
                 <div>加载中...</div>
             )
         }
-        const {overViewMonth, overViewData} = this.state
+        const {overViewMonth, overViewData, selectedIndex} = this.state
         const leftBudget = account.budget > 0
             ? <span>距预算: {account.budget - account.totalCost}</span>
             : ''
+        const chartWidth = window.innerWidth
         return (
             <div>
-                <div>tab1
+                <WhiteSpace size='lg' />
+                <WingBlank size='lg'>
+                  <SegmentedControl values={['统计', '图标']} selectedIndex={selectedIndex} onChange={this.changeTab}/>
+                </WingBlank>
+                <WhiteSpace size='lg' />
+                <ToggleWrapper show={selectedIndex === 0}>
                     <span>总支出 {account.totalCost}
                         {leftBudget}
                     </span>
+                    <div>日均: {account.averageDay}</div>
                     <div>
                         最近添加项目:
                     </div>
@@ -215,22 +243,18 @@ class DashBoard extends React.Component {
                                 .items
                                 .map(item => {
                                     return (
-                                        <div key={item.itemId}>
-                                            <span>{item.description}</span>
-                                            <span>{item.price}</span>
-                                        </div>
+                                        <AccountItem key={item.itemId} {...item} onDel={this.delAccount} />
                                     )
                                 })
                             : <span>无</span>}
                     </div>
-
-                </div>
-                <div>tab2 统计 
-                    <div>{overViewMonth}月 ￥{overViewData}</div>
-                    <div ref={el => this.overviewChartDiv = el}  style={{width: "100%", height:"150px"}}></div>
-                    <div>日均: {account.averageDay}</div>
-                     每一项支出／每天支出
-                </div>
+                </ToggleWrapper>
+                <ToggleWrapper show={selectedIndex === 1}> 
+                    <div>{overViewMonth} ￥{overViewData}</div>
+                    <div ref={el => this.overviewChartDiv = el}  style={{width: `${chartWidth}px`, height:"150px"}}></div>
+                    
+                     每一项支出／每天支出/每人支出
+                </ToggleWrapper>
             </div>
         )
     }
