@@ -17,7 +17,8 @@ class DashBoard extends React.Component {
         ownerSelectData: null,
         overViewMonth:null,
         overViewData:null,
-        selectedIndex: 0
+        selectedIndex: 0,
+        selectedTimeDimension: 0
     }
     componentWillReceiveProps() {
         this.getOwnerPickerData()
@@ -111,7 +112,6 @@ class DashBoard extends React.Component {
                     // console.log('ser', this.props.accountItems)
                 })
         }
-
     }
     initCharts(data) {
         if (!this.overviewChart) {
@@ -124,9 +124,9 @@ class DashBoard extends React.Component {
                 })
             })
         }
-        const maxNumber = Math.max.apply(Math, data.data)
-        const maxLength = maxNumber.toString()
-        console.log('max', maxLength)
+        // const maxNumber = Math.max.apply(Math, data.data)
+        // const maxLength = maxNumber.toString()
+        // console.log('max', maxLength)
         const overviewOption = {
             xAxis: {
                 type: 'category',
@@ -167,14 +167,22 @@ class DashBoard extends React.Component {
         }
         this.overviewChart.setOption(overviewOption);
     }
+    initCategoryCharts() {
+
+    }
     // 切换标题栏
     changeTab = e => {
-
         const selectedIndex = e.nativeEvent.selectedSegmentIndex
-        console.log('index', selectedIndex)
         this.setState({
             selectedIndex
         })
+    }
+    // 切换时间维度
+    changeTimeDimension = e => {
+        const selectedTimeDimension = e.nativeEvent.selectedSegmentIndex
+        this.setState({
+            selectedTimeDimension
+        }) 
     }
     getOwnerPicker(ownerSelectData) {
         if (ownerSelectData) {
@@ -199,6 +207,21 @@ class DashBoard extends React.Component {
             )
         }
     }
+    setInitialOverViewData(data) {
+        if (data.date.length && data.data.length) {
+            this.setState({
+                overViewMonth:data.date[data.date.length - 1],
+                overViewData:data.data[data.data.length - 1]
+            }, this.initCategoryCharts)
+        }
+
+    }
+    componentDidUpdate() {
+        if (this.overviewChartDiv && this.account && this.account.chartData && this.changeAccount) {
+            this.initCharts(this.account.chartData.totalOverview)
+            this.setInitialOverViewData(this.account.chartData.totalOverview)
+        }
+    }
     delAccount = (account)=> {
         console.log('del', account)
         Modal.alert('删除', '确定删除吗?', [
@@ -217,7 +240,7 @@ class DashBoard extends React.Component {
                 <div>加载中...</div>
             )
         }
-        const {overViewMonth, overViewData, selectedIndex} = this.state
+        const {overViewMonth, overViewData, selectedIndex, selectedTimeDimension} = this.state
         const leftBudget = account.budget > 0
             ? <span>距预算: {account.budget - account.totalCost}</span>
             : ''
@@ -226,7 +249,7 @@ class DashBoard extends React.Component {
             <div>
                 <WhiteSpace size='lg' />
                 <WingBlank size='lg'>
-                  <SegmentedControl values={['统计', '图标']} selectedIndex={selectedIndex} onChange={this.changeTab}/>
+                  <SegmentedControl values={['统计', '图表']} selectedIndex={selectedIndex} onChange={this.changeTab}/>
                 </WingBlank>
                 <WhiteSpace size='lg' />
                 <ToggleWrapper show={selectedIndex === 0}>
@@ -249,33 +272,26 @@ class DashBoard extends React.Component {
                             : <span>无</span>}
                     </div>
                 </ToggleWrapper>
-                <ToggleWrapper show={selectedIndex === 1}> 
+                <ToggleWrapper show={selectedIndex === 1}>
+                  <WingBlank size='lg'>
+                    <SegmentedControl style={{width:'70px'}} values={['月', '年']} selectedIndex={selectedTimeDimension} onChange={this.changeTimeDimension}/>
+                  </WingBlank>
+                  {/* 月度图表 */}
+                  <ToggleWrapper show={selectedTimeDimension === 0}>
                     <div>{overViewMonth} ￥{overViewData}</div>
                     <div ref={el => this.overviewChartDiv = el}  style={{width: `${chartWidth}px`, height:"150px"}}></div>
                     
                      每一项支出／每天支出/每人支出
+                  </ToggleWrapper>
+                  {/* 年度图表 */}
+                  <ToggleWrapper show={selectedTimeDimension === 1}>
+                  </ToggleWrapper>
                 </ToggleWrapper>
             </div>
         )
     }
-    setInitialOverViewData(data) {
-        if (data.date.length && data.data.length) {
-            this.setState({
-                overViewMonth:data.date[data.date.length - 1],
-                overViewData:data.data[data.data.length - 1]
-            })
-        }
 
-    }
-    componentDidUpdate() {
-       
-        if (this.overviewChartDiv && this.account && this.account.chartData && this.changeAccount) {
-            this.initCharts(this.account.chartData.totalOverview)
-            this.setInitialOverViewData(this.account.chartData.totalOverview)
-        }
-    }
     render() {
-        console.log('render')
         const {ownerSelectData} = this.state
         let accounts = this.props.curFor && this.setAccountItems(this.props.curFor)
         let account = accounts && accounts[0]
@@ -288,14 +304,11 @@ class DashBoard extends React.Component {
             if (this.account !== account) {
                 this.changeAccount = true
                 this.account = account
-              
-
             } else {
                 this.changeAccount = false
             }
         }
         const accountBody = this.getAccountBody(account)
-        
         
         return (
             <div>
