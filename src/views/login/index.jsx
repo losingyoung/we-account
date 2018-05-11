@@ -3,7 +3,7 @@ import {signUp} from '../../service'
 import InputItem from "antd-mobile/lib/input-item";
 import Toast from 'antd-mobile/lib/toast';
 import * as Styled from './Styled'
-
+import {connect} from 'react-redux'
 class Login extends React.Component {
     Login() {
         signUp().then(res => {
@@ -20,31 +20,18 @@ class Login extends React.Component {
     goDirectly() {
         Toast.info('正在紧张建设中-.-', 1.5)
     }
-    // upload = () => {
-    //     var fileObj = document
-    //         .getElementById("FileUpload")
-    //         .files[0]; // js 获取文件对象
-    //     if (typeof(fileObj) == "undefined" || fileObj.size <= 0) {
-    //         alert("请选择图片");
-    //         return;
-    //     }
-    //     var formFile = new FormData(fileObj);
-    //     formFile.append("action", "UploadVMKImagePath");
-    //     formFile.append("uploadFile", fileObj); //加入文件对象
-    //     formFile.append("file", '1');
-    //     // debugger
-    //     var data = formFile;
-    //     uploadFile(data)
-    //     console.log('upload', formFile)
-    // }
     render() {
+        console.log('counerA', this.props.counterA)
         return (
             <Styled.LoginWrapper>
-                {/* <form ref={el => this.formEl = el}>
-                  <input type="file" name="file" id="FileUpload"/>
-                </form>
-                
-                <button id="btn_uploadimg" onClick={this.upload}>click</button> */}
+               
+                {/* a: {this.props.counterA} b: {this.props.counterB}
+                <button onClick={() => {this.props.addA()}}>addA</button>
+                <button onClick={() => {this.props.mulA()}}>mulA</button>
+                <button onClick={() => {this.props.reduceA()}}>reduceA</button>
+                <button onClick={() => {this.props.addB()}}>addB</button>
+                <button onClick={() => {this.props.reduceB()}}>addB</button>
+                <button onClick={() => {this.props.abB()}}>abB</button> */}
                 <Styled.LoginContainer>
                     <InputItem className='login-input' placeholder="账号"/>
                     <InputItem type='password' className='login-input' placeholder="密码"/>
@@ -68,5 +55,48 @@ class Login extends React.Component {
         )
     }
 }
-
-export default Login
+// const mapState = (state) => {
+//     return {
+//         counterA: state.counterA,
+//         counterB: state.counterB
+//     }
+// }
+// const mapDispatch = dispatch => {
+//     return {
+//         addA() {
+//             dispatch({
+//                 namespace: 'aaa',
+//                 type: 'ADD'
+//             })
+//         },
+//         mulA() {
+//             dispatch({
+//                 type: 'MUL'
+//             })
+//         },
+//         reduceA () {
+//             dispatch({
+//                 namespace: 'aaa',
+//                 type: 'REDUCE'
+//             })
+//         },
+//         addB() {
+//             dispatch({
+//                 namespace: 'bbb',
+//                 type: 'ADD'
+//             })
+//         },
+//         reduceB () {
+//             dispatch({
+//                 namespace: 'bbb',
+//                 type: 'REDUCE'
+//             })
+//         },
+//         abB () {
+//             dispatch({
+//                 type: 'MINUS'
+//             })
+//         }
+//     }
+// }
+export default Login //connect(mapState, mapDispatch)(Login)
