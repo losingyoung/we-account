@@ -116,12 +116,10 @@ class DashBoard extends React.Component {
         }
     }
     initOverviewCharts(data) {
-        
         this.initMonthOverviewChart(data)
         this.initYearOverviewChart(data)
     }
     initMonthOverviewChart(data) {
-        console.log('draw month overview')
         if (!this.monthOverviewChart) {
             this.monthOverviewChart = echarts.init(this.monthOverviewChartDiv)
             this.monthOverviewChart.on('click',e => {
@@ -161,7 +159,6 @@ class DashBoard extends React.Component {
         this.monthOverviewChart.setOption(overviewOption);
     }
     initYearOverviewChart(data) {
-        console.log('draw year overview')
         if (!this.yearOverviewChart) {
             this.yearOverviewChart = echarts.init(this.yearOverviewChartDiv)
             this.yearOverviewChart.on('click',e => {
@@ -201,7 +198,6 @@ class DashBoard extends React.Component {
         this.yearOverviewChart.setOption(overviewOption);
     }
     initCategoryCharts() {
-        console.log('init category', this.account)
         this.initMonthlyCategoryCharts()
         this.initYearlyCategoryCharts()
         // this.monthCategoryChart.setOption(option)
@@ -218,7 +214,6 @@ class DashBoard extends React.Component {
         this.drawYearPersonChart()
     }
     drawMonthCategoryChart() {
-        console.log('draw month category')
         if (!this.monthCategoryChart) {
             this.monthCategoryChart = echarts.init(this.monthCategoryChartDiv)
         }
@@ -272,7 +267,6 @@ class DashBoard extends React.Component {
         this.monthCategoryChart.setOption(option)
     }
     drawYearCategoryChart() {
-        console.log('draw year category')
         if (!this.yearCategoryChart) {
             this.yearCategoryChart = echarts.init(this.yearCategoryChartDiv)
         }
@@ -326,7 +320,6 @@ class DashBoard extends React.Component {
         this.yearCategoryChart.setOption(option)
     }
     drawMonthPersonChart() {
-        console.log('draw month person')
         if (!this.monthPersonChart) {
             this.monthPersonChart = echarts.init(this.monthPersonChartDiv)
         }
@@ -380,7 +373,6 @@ class DashBoard extends React.Component {
         this.monthPersonChart.setOption(option)
     }
     drawYearPersonChart() {
-        console.log('draw year person')
         if (!this.yearPersonChart) {
             this.yearPersonChart = echarts.init(this.yearPersonChartDiv)
         }

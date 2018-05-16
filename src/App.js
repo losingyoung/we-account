@@ -4,7 +4,7 @@ import {Route, Switch} from 'react-router-dom'
 import Login from './views/login'
 import Home from './views/home'
 import Demo from './views/demo'
-
+import Test from "./views/test";
 class App extends Component {
   // state={
   //   curPath: ''
@@ -30,6 +30,7 @@ class App extends Component {
           <Route path='/' exact component={Login} />
           <Route path='/index' component={Home} />
           <Route path='/demo' component={Demo} />
+          <Route path='/test' component={Test} />
         </Switch>
       </div>
     );
