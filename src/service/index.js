@@ -31,6 +31,8 @@ export const getUnreadNotifications = params => axios.post('/api/notification/ge
 export const refuseRequest = params => axios.post('/api/notification/refuse_request', params)
 export const acceptRequest = params => axios.post('/api/notification/accept_request', params)
 
+
+export const uploadFile = params=> axios.post('/api/account/add_item', params)
 export const koaService = {
     query(params) {
         return axios.post('/api/table/query', params)
