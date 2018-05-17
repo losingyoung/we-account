@@ -361,9 +361,9 @@ class ImgCroper extends React.Component {
     onComplete = () => {
         try {
             const quality = 0.92
-            this.transferCanvas.width = this.clipRectSize
+            this.transferCanvas.width = this.clipRectSize * 2
             this.transferCanvas.style.width = this.clipRectSize + "px"
-            this.transferCanvas.height = this.clipRectSize
+            this.transferCanvas.height = this.clipRectSize * 2
             this.transferCanvas.style.height = this.clipRectSize + "px"
             // img 是图像本身的尺寸 canvas width是页面上拉伸过的
             console.log('this.canvasFull.width', this.canvasFull.width)
@@ -386,9 +386,9 @@ class ImgCroper extends React.Component {
 
             if (this.rotateStep & 1) {
                 // 最终像素要根据图片的来
-                transferCtx.drawImage(this.img, this.cropTop * this.RATIO_PIXEL / this.scale, this.cropLeft * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
+                transferCtx.drawImage(this.img, this.cropTop * this.RATIO_PIXEL / this.scale, this.cropLeft * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize * 2, this.clipRectSize * 2 )
             } else {
-                transferCtx.drawImage(this.img, this.cropLeft * this.RATIO_PIXEL / this.scale, this.cropTop * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize, this.clipRectSize)
+                transferCtx.drawImage(this.img, this.cropLeft * this.RATIO_PIXEL / this.scale, this.cropTop * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, this.clipRectSize * this.RATIO_PIXEL / this.scale, 0, 0, this.clipRectSize * 2, this.clipRectSize * 2)
             }
             const dataUrl = this
                 .transferCanvas
