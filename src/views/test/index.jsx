@@ -50,7 +50,7 @@ class Test extends React.Component {
                 <input type="file" ref={el => this.inputEl = el} onChange={this.setImgData}/>
                 <button onClick={this.drawCanvas}>draw</button>
                 <hr/>
-                <img  src={uploadedImg}/>
+                <img  src={uploadedImg} alt=''/>
                 <hr/>
                 <canvas ref={el => this.canvasEl = el} width='800' height='500'/> 
             </div>

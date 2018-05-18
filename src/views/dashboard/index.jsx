@@ -13,6 +13,7 @@ import TYPE from '../../constants/constants'
 import * as Service from "../../service";
 import AccountItem from "./children/account-item";
 
+const BAR_HEIGHT = 30
 class DashBoard extends React.Component {
     state = {
         ownerSelectData: null,
@@ -20,6 +21,10 @@ class DashBoard extends React.Component {
         overViewYear: null,
         overViewData:null, //页面上显示的
         overViewYearData:null,
+        monthCategoryChartHeight: 0, 
+        yearCategoryChartHeight: 0, 
+        monthPersonChartHeight: 0, 
+        yearPersonChartHeight: 0,
         selectedIndex: 0,
         selectedTimeDimension: 0
     }
@@ -116,14 +121,13 @@ class DashBoard extends React.Component {
         }
     }
     initOverviewCharts(data) {
-        this.initMonthOverviewChart(data)
-        this.initYearOverviewChart(data)
+        this.drawMonthOverviewChart(data.month)
+        this.drawYearOverviewChart(data.year)
     }
-    initMonthOverviewChart(data) {
+    drawMonthOverviewChart(data) {
         if (!this.monthOverviewChart) {
             this.monthOverviewChart = echarts.init(this.monthOverviewChartDiv)
             this.monthOverviewChart.on('click',e => {
-                console.log('clicked',e)
                 this.setState({
                     overViewMonth:e.name,
                     overViewData:e.value
@@ -158,11 +162,10 @@ class DashBoard extends React.Component {
         }
         this.monthOverviewChart.setOption(overviewOption);
     }
-    initYearOverviewChart(data) {
+    drawYearOverviewChart(data) {
         if (!this.yearOverviewChart) {
             this.yearOverviewChart = echarts.init(this.yearOverviewChartDiv)
             this.yearOverviewChart.on('click',e => {
-                console.log('clicked',e)
                 this.setState({
                     overViewYear:e.name,
                     overViewYearData:e.value
@@ -200,23 +203,78 @@ class DashBoard extends React.Component {
     initCategoryCharts() {
         this.initMonthlyCategoryCharts()
         this.initYearlyCategoryCharts()
-        // this.monthCategoryChart.setOption(option)
-        // this.yearCategoryChart.setOption(option)
-        // this.monthPersonChart.setOption(option)
-        // this.yearPersonChart.setOption(option)
     }
     initMonthlyCategoryCharts() {
-        this.drawMonthCategoryChart()
-        this.drawMonthPersonChart()
+        const {overViewMonth} = this.state
+        const curMonthData = this.account.chartData.monthData[overViewMonth]
+        const chartData = curMonthData && Object.keys(curMonthData).reduce((ret, cur) => {
+           if (cur === 'category') {
+               Object.assign(ret, {
+                   category: Object.keys(curMonthData.category).reduce((sum, cur) => {
+                        return Object.assign(sum, {
+                            data: sum.data.concat([curMonthData.category[cur].totalCost]),
+                            category: sum.category.concat([curMonthData.category[cur].categoryName])
+                        })
+                   }, {data: [], category: []})
+              })
+           }
+           if (cur === 'person') {
+                Object.assign(ret, {
+                    person:Object.keys(curMonthData.person).reduce((sum, cur) => {
+                    return Object.assign(sum, {
+                        data: sum.data.concat([curMonthData.person[cur].totalCost]),
+                        category: sum.category.concat([curMonthData.person[cur].name])
+                    }
+                )
+                }, {data: [], category: []})
+            })
+           }
+           return ret
+        }, {category:{},person:{}})
+        
+        const categoryData = chartData && chartData.category
+        const personData = chartData && chartData.person
+
+        this.drawMonthCategoryChart(categoryData)
+        this.drawMonthPersonChart(personData)
+
     }
     initYearlyCategoryCharts() {
-        this.drawYearCategoryChart()
-        this.drawYearPersonChart()
+        const {overViewYear} = this.state
+        const curYearData = this.account.chartData.yearData[overViewYear]
+        const chartData = curYearData && Object.keys(curYearData).reduce((ret, cur) => {
+           if (cur === 'category') {
+               Object.assign(ret, {
+                   category: Object.keys(curYearData.category).reduce((sum, cur) => {
+                        return Object.assign(sum, {
+                            data: sum.data.concat([curYearData.category[cur].totalCost]),
+                            category: sum.category.concat([curYearData.category[cur].categoryName])
+                        })
+                   }, {data: [], category: []})
+              })
+           }
+           if (cur === 'person') {
+                Object.assign(ret, {
+                    person:Object.keys(curYearData.person).reduce((sum, cur) => {
+                    return Object.assign(sum, {
+                        data: sum.data.concat([curYearData.person[cur].totalCost]),
+                        category: sum.category.concat([curYearData.person[cur].name])
+                    }
+                )
+                }, {data: [], category: []})
+            })
+           }
+           return ret
+        }, {category:{},person:{}})
+        
+        const categoryData = chartData && chartData.category
+        const personData = chartData && chartData.person
+        this.drawYearCategoryChart(categoryData)
+        this.drawYearPersonChart(personData)
+    
     }
-    drawMonthCategoryChart() {
-        if (!this.monthCategoryChart) {
-            this.monthCategoryChart = echarts.init(this.monthCategoryChartDiv)
-        }
+    drawMonthCategoryChart(data) {
+       console.log('month category', data)
         const option = {
             grid: {
                 left: '3%',
@@ -249,13 +307,13 @@ class DashBoard extends React.Component {
                     show: false
                 },
                 type: 'category',
-                data: ['巴西','印尼','美国','印度','中国','世界人口']
+                data: data && data.category
             },
             series: [
                 {
                     name: '2011年',
                     type: 'bar',
-                    data: [18203, 23489, 29034, 104970, 131744, 630230],
+                    data: data && data.data,
                     label: {
                         show: true,
                         position: 'insideLeft',
@@ -264,12 +322,21 @@ class DashBoard extends React.Component {
                 }
             ]
         };
-        this.monthCategoryChart.setOption(option)
+        // debugger
+        this.setState({
+            monthCategoryChartHeight: BAR_HEIGHT * ((data && data.category && data.category.length) || 0)
+        }, () => {
+            if (!this.monthCategoryChart) {
+                this.monthCategoryChart = echarts.init(this.monthCategoryChartDiv)
+            }
+            this.monthCategoryChart.resize()
+            this.monthCategoryChart.setOption(option)
+        })
+
+        
     }
-    drawYearCategoryChart() {
-        if (!this.yearCategoryChart) {
-            this.yearCategoryChart = echarts.init(this.yearCategoryChartDiv)
-        }
+    drawYearCategoryChart(data) {
+
         const option = {
             grid: {
                 left: '3%',
@@ -302,13 +369,13 @@ class DashBoard extends React.Component {
                     show: false
                 },
                 type: 'category',
-                data: ['巴西','印尼','美国','印度','中国','世界人口']
+                data: data && data.category
             },
             series: [
                 {
                     name: '2011年',
                     type: 'bar',
-                    data: [18203, 23489, 29034, 104970, 131744, 630230],
+                    data: data && data.data,
                     label: {
                         show: true,
                         position: 'insideLeft',
@@ -317,12 +384,19 @@ class DashBoard extends React.Component {
                 }
             ]
         };
-        this.yearCategoryChart.setOption(option)
+        this.setState({
+            yearCategoryChartHeight: BAR_HEIGHT * ((data && data.category && data.category.length) || 0)
+        }, () => {
+            if (!this.yearCategoryChart) {
+                this.yearCategoryChart = echarts.init(this.yearCategoryChartDiv)
+            }
+            this.yearCategoryChart.resize()
+            this.yearCategoryChart.setOption(option)
+        })
+
     }
-    drawMonthPersonChart() {
-        if (!this.monthPersonChart) {
-            this.monthPersonChart = echarts.init(this.monthPersonChartDiv)
-        }
+    drawMonthPersonChart(data) {
+
         const option = {
             grid: {
                 left: '3%',
@@ -355,13 +429,13 @@ class DashBoard extends React.Component {
                     show: false
                 },
                 type: 'category',
-                data: ['巴西','印尼','美国','印度','中国','世界人口']
+                data: data && data.category
             },
             series: [
                 {
                     name: '2011年',
                     type: 'bar',
-                    data: [18203, 23489, 29034, 104970, 131744, 630230],
+                    data: data && data.data,
                     label: {
                         show: true,
                         position: 'insideLeft',
@@ -370,12 +444,18 @@ class DashBoard extends React.Component {
                 }
             ]
         };
-        this.monthPersonChart.setOption(option)
+        this.setState({
+            monthPersonChartHeight: BAR_HEIGHT * ((data && data.category && data.category.length) || 0)
+        }, () => {
+            if (!this.monthPersonChart) {
+                this.monthPersonChart = echarts.init(this.monthPersonChartDiv)
+            }
+            this.monthPersonChart.resize()
+            this.monthPersonChart.setOption(option)
+        })
     }
-    drawYearPersonChart() {
-        if (!this.yearPersonChart) {
-            this.yearPersonChart = echarts.init(this.yearPersonChartDiv)
-        }
+    drawYearPersonChart(data) {
+
         const option = {
             grid: {
                 left: '3%',
@@ -408,13 +488,13 @@ class DashBoard extends React.Component {
                     show: false
                 },
                 type: 'category',
-                data: ['巴西','印尼','美国','印度','中国','世界人口']
+                data: data && data.category
             },
             series: [
                 {
                     name: '2011年',
                     type: 'bar',
-                    data: [18203, 23489, 29034, 104970, 131744, 630230],
+                    data: data && data.data,
                     label: {
                         show: true,
                         position: 'insideLeft',
@@ -423,7 +503,15 @@ class DashBoard extends React.Component {
                 }
             ]
         };
-        this.yearPersonChart.setOption(option)
+        this.setState({
+            yearPersonChartHeight: BAR_HEIGHT * ((data && data.category && data.category.length) || 0)
+        }, () => {
+            if (!this.yearPersonChart) {
+                this.yearPersonChart = echarts.init(this.yearPersonChartDiv)
+            }
+            this.yearPersonChart.resize()
+            this.yearPersonChart.setOption(option)
+        })
     }
     // 切换标题栏
     changeTab = e => {
@@ -463,14 +551,22 @@ class DashBoard extends React.Component {
         }
     }
     setInitialOverViewData(data) {
-        if (data.date.length && data.data.length) {
-            this.setState({
-                overViewMonth:data.date[data.date.length - 1],
-                overViewData:data.data[data.data.length - 1],
-                overViewYear: data.date[data.date.length - 1],
-                overViewYearData:data.data[data.data.length - 1]
-            }, this.initCategoryCharts)
+        let newState = {}
+        const monthOverview = data.month
+        const yearOverview = data.year
+        if (monthOverview.date.length && monthOverview.data.length) {
+            Object.assign(newState, {
+                overViewMonth:monthOverview.date[monthOverview.date.length - 1],
+                overViewData:monthOverview.data[monthOverview.data.length - 1]
+            })
         }
+        if (yearOverview.date.length && yearOverview.data.length) {
+            Object.assign(newState, {
+                overViewYear: yearOverview.date[yearOverview.date.length - 1],
+                overViewYearData:yearOverview.data[yearOverview.data.length - 1]
+            })
+        }
+        this.setState(newState, this.initCategoryCharts)
 
     }
     // 初始化&account改变 重新画表
@@ -498,7 +594,7 @@ class DashBoard extends React.Component {
                 <div>加载中...</div>
             )
         }
-        const {overViewMonth, overViewData, overViewYear, overViewYearData, selectedIndex, selectedTimeDimension} = this.state
+        const {overViewMonth, overViewData, overViewYear, overViewYearData, selectedIndex, selectedTimeDimension, monthCategoryChartHeight, yearCategoryChartHeight, monthPersonChartHeight, yearPersonChartHeight} = this.state
         const leftBudget = account.budget > 0
             ? <span>距预算: {account.budget - account.totalCost}</span>
             : ''
@@ -538,15 +634,17 @@ class DashBoard extends React.Component {
                   <ToggleWrapper show={selectedTimeDimension === 0}>
                     <div>{overViewMonth}月 ￥{overViewData}</div>
                     <div ref={el => this.monthOverviewChartDiv = el}  style={{width: `${chartWidth}px`, height:"150px"}}></div>
-                    <div ref={el => this.monthCategoryChartDiv = el}  style={{width: `${chartWidth}px`, height:"200px"}}></div>
-                    <div ref={el => this.monthPersonChartDiv = el}  style={{width: `${chartWidth}px`, height:"200px"}}></div>
+                    <div ref={el => this.monthCategoryChartDiv = el}  style={{width: `${chartWidth}px`, height:monthCategoryChartHeight + "px"}}></div>
+                    <WhiteSpace size='lg' />
+                    <div ref={el => this.monthPersonChartDiv = el}  style={{width: `${chartWidth}px`, height:monthPersonChartHeight + "px"}}></div>
                   </ToggleWrapper>
                   {/* 年度图表 */}
                   <ToggleWrapper show={selectedTimeDimension === 1}>
                      <div>{overViewYear}年 ￥{overViewYearData}</div>
                      <div ref={el => this.yearOverviewChartDiv = el}  style={{width: `${chartWidth}px`, height:"150px"}}></div>
-                     <div ref={el => this.yearCategoryChartDiv = el}  style={{width: `${chartWidth}px`, height:"200px"}}></div>
-                     <div ref={el => this.yearPersonChartDiv = el}  style={{width: `${chartWidth}px`, height:"200px"}}></div>
+                     <div ref={el => this.yearCategoryChartDiv = el}  style={{width: `${chartWidth}px`, height:yearCategoryChartHeight + "px"}}></div>
+                     <WhiteSpace size='lg' />
+                     <div ref={el => this.yearPersonChartDiv = el}  style={{width: `${chartWidth}px`, height:yearPersonChartHeight + "px"}}></div>
                   </ToggleWrapper>
                 </ToggleWrapper>
             </div>

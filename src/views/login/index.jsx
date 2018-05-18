@@ -3,7 +3,7 @@ import {signUp} from '../../service'
 import InputItem from "antd-mobile/lib/input-item";
 import Toast from 'antd-mobile/lib/toast';
 import * as Styled from './Styled'
-import {connect} from 'react-redux'
+// import {connect} from 'react-redux'
 class Login extends React.Component {
     Login() {
         signUp().then(res => {
