@@ -3,6 +3,7 @@ import {signUp} from '../../service'
 import InputItem from "antd-mobile/lib/input-item";
 // import Toast from 'antd-mobile/lib/toast';
 import * as Styled from './Styled'
+import md5 from 'blueimp-md5'
 // import {connect} from 'react-redux'
 class Login extends React.Component {
     state = {
@@ -13,7 +14,7 @@ class Login extends React.Component {
         const {account, pwd} = this.state
         let params = {
           account,
-          pwd
+          pwd: md5(pwd, account)
         }
         signUp(params).then(res => {
             console.log('signup',res)
