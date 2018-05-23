@@ -33,8 +33,8 @@ class Me extends React.Component {
     }
     getGender(val) {
         return val === "0"
-            ? "fa fa-mars"
-            : "fa fa-venus"
+            ? "fa fa-venus"
+            : "fa fa-mars"
     }
     changeUseInfo = () => {
         console.log(this.props)
