@@ -12,8 +12,26 @@ service.interceptors.request.use(config => {
 })
 
 service.interceptors.response.use(response => {
-    console.log('fetched', response)
-    return response
+
+    let res = response.data
+
+    // 暂时数据代理
+    let resData = res.data
+    Object.defineProperty(res, 'data', {
+        get() {
+            if (resData) {
+                return resData
+            } else {
+                return res
+            }
+        }
+    })
+    // console.log(res, resData)
+    if (res.success === false || res.data.success === false) {
+        alert(res.errorMsg || '服务器错误')
+    }
+    return res.data
+    // return response
 }, err => {
     Promise.reject(err)
 })

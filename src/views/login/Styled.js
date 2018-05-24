@@ -15,7 +15,7 @@ min-width:80%;
 transform: translate(-50%,-50%);
 background:#fff;
 border-radius:5px;
-padding:15px 10px 5px 10px;
+padding:15px 10px 15px 10px;
 `
 
 export const InputTable = Styled.div`

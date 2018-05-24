@@ -30,7 +30,7 @@ class Home extends React.Component {
         }
         // 这里应加遮罩 必须取完数据才可以点击跳转****************************
         Service.getUserInfo().then(res => {
-            console.log('userinfo', res.data.userInfo)
+            console.log('userinfo', res)
             let data = res.data
             this.props.saveUserInfo(data.userInfo)
             this.setState({
@@ -38,7 +38,7 @@ class Home extends React.Component {
             })
         })
         Service.getGroups().then(res => {
-            console.log('groupinfo', res.data)
+            console.log('groupinfo', res)
             let {groupInfos} = res.data
             this.props.saveGroupInfo(groupInfos)
             this.setState({
