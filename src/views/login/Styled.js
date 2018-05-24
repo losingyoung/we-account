@@ -1,5 +1,6 @@
 import Styled from 'styled-components'
 
+const Blue = "#108ee9"
 export const LoginWrapper = Styled.div`
 height:100%;
 width:100%;
@@ -48,4 +49,12 @@ export const LoginButton= Styled.div`
   justify-content:center;
   align-items:center;
   font-size:18px;
+`
+export const TelCodeBtn =Styled.div`
+  padding:5px;
+  background: ${props => props.disabled ? '#fff' : Blue};
+  color: ${props => props.disabled ? '#666' : "#fff"};
+  border: ${props => props.disabled ? '#ddd' : Blue};
+  word-break: keep-all;
+  border-radius: 5px;
 `

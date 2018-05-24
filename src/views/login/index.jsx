@@ -6,21 +6,58 @@ import {Toast} from 'antd-mobile';
 import * as Styled from './Styled'
 import md5 from 'blueimp-md5'
 // import {connect} from 'react-redux'
-function MobileValidate(props) {
-  return (
-      <div>
-        <InputItem className='login-input' placeholder="手机号" value={props.telNo} onChange={props.changeTelNo}/>
-        <div style={{display: 'flex', alignItems: 'center'}}>
-          <InputItem className='login-input' placeholder="验证码" /><div style={{wordBreak: 'keep-all', background: 'red'}}>发送验证码</div>
-        </div>
-      </div>
-  )
+class MobileValidate extends React.Component { 
+    state = {
+        telNo: '',
+        leftSeconds: 0
+    }
+    changeTelNo = telNo => {
+       this.setState({
+          telNo
+       })
+    }
+    clickSend = () => {
+        if (this.state.telNo.replace(/\s*/g, '').length !== 11) {
+            Toast.show('请输入正确的手机号')
+            return
+        }
+        this.setState({
+            leftSeconds: 60
+        })
+        this.timer = setInterval(() => {
+            this.setState((preState) => {
+                if (preState.leftSeconds === 0) {
+                  clearInterval(this.timer)
+                  return {}
+                }
+                return {
+                    leftSeconds: preState.leftSeconds - 1
+                }
+             }
+            )
+        }, 1000)
+        this.props.sendTelCode && this.props.sendTelCode(this.state.telNo)
+    }
+    render() {
+        const {telNo,leftSeconds} = this.state
+        let codeText = leftSeconds > 0 ? `重新发送(${leftSeconds}s)` : '发送验证码'
+        return (
+            <div>
+              <InputItem className='login-input' placeholder="手机号" type="phone" value={telNo} onChange={this.changeTelNo}/>
+              <div style={{display: 'flex', alignItems: 'center'}}>
+                <InputItem className='login-input' placeholder="验证码" /><Styled.TelCodeBtn onClick={this.clickSend} disabled={leftSeconds > 0}>{codeText}</Styled.TelCodeBtn>
+              </div>
+            </div>
+        )
+    }
+  
 }
 class Login extends React.Component {
     state = {
         account: '',
         pwd: '',
-        showPwdInput: true,
+        showPwdInput: false,
+        showValidateCode: true,
         telNo: ''
     }
     async Login() {
@@ -61,8 +98,14 @@ class Login extends React.Component {
             telNo
         })
     }
+    // 点击发送验证码
+    sendTelCode = (tel) => {
+        console.log('发送验证码到手机', tel)
+    }
     validateTelCode = () => {
         // 验证code
+        console.log('获取服务器正确验证码 对比')
+        console.log('正确则跳转')
     }
     forgetPassword() {
         signUp()
@@ -97,7 +140,7 @@ class Login extends React.Component {
                         </Styled.LoginText>
                     </ToggleShow>
                     <ToggleShow show={!showPwdInput && showValidateCode}>
-                      <MobileValidate telNo={telNo} changeTelNo={this.changeTelNo}/>
+                      <MobileValidate sendTelCode={this.sendTelCode}/>
                       <Styled.LoginButton
                             onClick={this
                             .validateTelCode}>验证</Styled.LoginButton>
